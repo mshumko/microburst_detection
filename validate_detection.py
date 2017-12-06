@@ -39,6 +39,9 @@ class CreateFakeData:
         If noise is true, Poisson noise will be added.
         The timeseries is shifted up by baseline variable.
         """
+        self.A = A
+        self.baseline = baseline
+
         sigmaArr = widthArr/2.3548 # Convert FWHM to sigmas.
         self.ts = baseline*np.ones((len(self.t), len(widthArr)), dtype=float)
 
@@ -65,7 +68,8 @@ class CreateFakeData:
         for (i, color) in enumerate(colors):
             self.ax.plot(self.t, self.ts[:, i], c=color)
 
-        self.ax.set(title='Random Gaussians', xlabel='Time (s)', ylabel='Counts/s')
+        self.ax.set(title='Random Gaussians | A = {} | baseline = {}'.format(
+            self.A, self.baseline), xlabel='Time (s)', ylabel='Counts/s')
 
         if ax is None:
             plt.show()
@@ -91,6 +95,7 @@ class TestBurstParam(CreateFakeData):
         This function will calculate the burst parameter points that are above the 
         thresh parameter.
         """
+        self.thresh = thresh
         self.detectInd = np.where(self.detectionParam > thresh)
         return
 
@@ -101,7 +106,7 @@ class TestBurstParam(CreateFakeData):
         Gaussian.
         """
         if ax is None:
-            fig, self.bx = plt.subplots()
+            fig, self.bx = plt.subplots(figsize=(11, 8))
         else:
             self.bx = ax
 
@@ -115,6 +120,9 @@ class TestBurstParam(CreateFakeData):
             tt = np.repeat(self.t[:, np.newaxis], self.ts.shape[1], axis=1)
             self.bx.scatter(tt[self.detectInd], 
                 self.detectionParam[self.detectInd], c='k')
+            self.bx.axhline(self.thresh)
+            self.bx.text(self.t[0], self.thresh, 'Threshold', va='bottom',
+                )
 
         self.bx.set(ylabel='Burst Parameter', xlabel='Time (s)')
 
@@ -128,12 +136,12 @@ if __name__ == '__main__':
     dT = 0.1
     t = np.arange(-5, 5, dT)
     cadence = 0.1
-    fwhm = np.linspace(0.01, 2, num=nTrials)
     t0 = 0
-    A = 100
+    A = 10
+    baseline=1
     fwhm = np.linspace(0.1, 2, num=nTrials)
 
-    testObj = TestBurstParam(A, t, t0, fwhm, baseline=100)
+    testObj = TestBurstParam(A, t, t0, fwhm, baseline=baseline)
     testObj.calcParam(cadence)
     testObj.calcThresh(2)
     
@@ -141,4 +149,5 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(2, sharex=True)
     testObj.plotTimeseires(ax=ax[0])
     testObj.plotDataDetection(ax=ax[1])
+    plt.tight_layout()
     plt.show()
