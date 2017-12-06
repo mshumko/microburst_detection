@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
+import burst_parameter.burst_parameter as burst_parameter
+#import waveletAnalysis
+
 class CreateFakeData:
     def __init__(self, t):
         self.t = t # Time array (not datetimes)
@@ -52,13 +55,13 @@ class CreateFakeData:
         parameter that is used to downsample the self.ts array plot every nth 
         Gaussian.
         """
-        colors = cm.rainbow(np.linspace(0, 1, num=self.ts.shape[1]))
-
         if ax is None:
             fig, self.ax = plt.subplots()
         else:
             self.ax = ax
 
+        colors = cm.rainbow(
+            np.linspace(0, 1, num=self.ts.shape[1])) # For plotting.
         for (i, color) in enumerate(colors):
             self.ax.plot(self.t, self.ts[:, i], c=color)
 
@@ -70,22 +73,72 @@ class CreateFakeData:
 
 
 class TestBurstParam(CreateFakeData):
-    def __init__(self, A, t, t0):
-
+    def __init__(self, A, t, t0, widthArr, baseline=1):
+        CreateFakeData.__init__(self, t)
+        self.makeTimeseries(A, t0, widthArr, baseline=baseline)
         return
 
+    def calcParam(self, cadence, N_WIDTH=0.1, A_WIDTH=0.5):
+        self.detectionParam = np.nan*np.ones_like(self.ts)
 
+        for (i, counts) in enumerate(self.ts):
+            self.detectionParam[i, :] = burst_parameter.obrien_burst_param(
+                counts, cadence, N_WIDTH=N_WIDTH, A_WIDTH=A_WIDTH)
+        return
 
+    def calcThresh(self, thresh):
+        """ 
+        This function will calculate the burst parameter points that are above the 
+        thresh parameter.
+        """
+        self.detectInd = np.where(self.detectionParam > thresh)
+        return
+
+    def plotDataDetection(self, ax=None):
+        """
+        This function will plot the Gaussian timeseries. nth=1 is an optional
+        parameter that is used to downsample the self.ts array plot every nth 
+        Gaussian.
+        """
+        if ax is None:
+            fig, self.bx = plt.subplots()
+        else:
+            self.bx = ax
+
+        colors = cm.rainbow(
+            np.linspace(0, 1, num=self.ts.shape[1])) # For plotting.
+        for (i, color) in enumerate(colors): # Plot burst parameter
+            self.bx.plot(self.t, self.detectionParam[:, i], c=color)
+
+        # Plot detections
+        if hasattr(self, "detectInd"):
+            tt = np.repeat(self.t[:, np.newaxis], self.ts.shape[1], axis=1)
+            self.bx.scatter(tt[self.detectInd], 
+                self.detectionParam[self.detectInd], c='k')
+
+        self.bx.set(ylabel='Burst Parameter', xlabel='Time (s)')
+
+        if ax is None:
+            plt.show()
+        return
 
 
 if __name__ == '__main__':
     nTrials = 10
     dT = 0.1
     t = np.arange(-5, 5, dT)
-    fwhm = np.linspace(0.1, 2, num=nTrials)
+    cadence = 0.1
+    fwhm = np.linspace(0.01, 2, num=nTrials)
     t0 = 0
     A = 100
     fwhm = np.linspace(0.1, 2, num=nTrials)
-    fakeData = CreateFakeData(t)
-    fakeData.makeTimeseries(A, t0, fwhm, noise=True)
-    fakeData.plotTimeseires()
+
+    testObj = TestBurstParam(A, t, t0, fwhm, baseline=100)
+    testObj.calcParam(cadence)
+    testObj.calcThresh(2)
+    
+    ### Plotting ###
+    fig, ax = plt.subplots(2, sharex=True)
+    testObj.plotTimeseires(ax=ax[0])
+    testObj.plotDataDetection(ax=ax[1])
+    plt.show()

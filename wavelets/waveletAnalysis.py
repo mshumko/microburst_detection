@@ -10,7 +10,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import datetime
 sys.path.insert(0, '/home/mike/FIREBIRD/microburst_detector/')
 
-import flag_dropouts
+#import flag_dropouts
 import operator
 
 __author__ = 'Mykhaylo Shumko'

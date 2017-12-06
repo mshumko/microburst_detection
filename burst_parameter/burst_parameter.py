@@ -10,7 +10,7 @@ def moving_average(interval, window_size):
     AUTHOR: Mykhaylo Shumko
     MOD: 2017-10-28
     """
-    window= np.ones(window_size)/float(window_size)
+    window = np.ones(int(window_size))/float(window_size)
     avg = np.convolve(interval, window, 'same')
     return avg
 
@@ -29,7 +29,7 @@ def obrien_burst_param(counts, cadence, N_WIDTH = 0.100, A_WIDTH = 0.500):
     AUTHOR: Mykhaylo Shumko
     MOD: 2017-10-28
     """
-    n = movingaverage(counts, N_WIDTH//cadence)
-    a = movingaverage(counts, A_WIDTH//cadence)
+    n = moving_average(counts, N_WIDTH//cadence)
+    a = moving_average(counts, A_WIDTH//cadence)
     bp = (n-a)/np.sqrt(1+a)
     return bp
