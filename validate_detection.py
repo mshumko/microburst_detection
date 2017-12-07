@@ -77,9 +77,9 @@ class CreateFakeData:
 
 
 class TestBurstParam(CreateFakeData):
-    def __init__(self, A, t, t0, widthArr, baseline=1):
+    def __init__(self, A, t, t0, widthArr, baseline=1, noise=True):
         CreateFakeData.__init__(self, t)
-        self.makeTimeseries(A, t0, widthArr, baseline=baseline)
+        self.makeTimeseries(A, t0, widthArr, baseline=baseline, noise=noise)
         self.widthArr = widthArr
         return
 
@@ -144,16 +144,16 @@ class TestBurstParam(CreateFakeData):
 
 
 if __name__ == '__main__':
-    nTrials = 10
+    nTrials = 5
     dT = 0.1
-    t = np.arange(-5, 5, dT)
+    t = np.arange(-2, 2, dT)
     cadence = 0.1
     t0 = 0
     A = 1000
     baseline = 0
     fwhm = np.linspace(0.1, 2, num=nTrials)
 
-    testObj = TestBurstParam(A, t, t0, fwhm, baseline=baseline)
+    testObj = TestBurstParam(A, t, t0, fwhm, baseline=baseline, noise=True)
     testObj.calcParam(cadence)
     testObj.calcThresh(5)
     testObj.calcHist()
