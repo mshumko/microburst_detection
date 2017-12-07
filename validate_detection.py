@@ -80,6 +80,7 @@ class TestBurstParam(CreateFakeData):
     def __init__(self, A, t, t0, widthArr, baseline=1):
         CreateFakeData.__init__(self, t)
         self.makeTimeseries(A, t0, widthArr, baseline=baseline)
+        self.widthArr = widthArr
         return
 
     def calcParam(self, cadence, N_WIDTH=0.1, A_WIDTH=0.5):
@@ -97,6 +98,18 @@ class TestBurstParam(CreateFakeData):
         """
         self.thresh = thresh
         self.detectInd = np.where(self.detectionParam > thresh)
+        return
+
+    def calcHist(self):
+        """
+        This function calculates the number of detections made for each scaled 
+        microburst and ratio of the detected number of points, to the FWHM number
+        of points.
+        """
+        detWidths = self.widthArr[self.detectInd[1]]
+        print(self.detectInd[1])
+        print(detWidths)
+        #plt.hist(detWidths)
         return
 
     def plotDataDetection(self, ax=None):
@@ -121,8 +134,7 @@ class TestBurstParam(CreateFakeData):
             self.bx.scatter(tt[self.detectInd], 
                 self.detectionParam[self.detectInd], c='k')
             self.bx.axhline(self.thresh)
-            self.bx.text(self.t[0], self.thresh, 'Threshold', va='bottom',
-                )
+            self.bx.text(self.t[0], self.thresh, 'Threshold', va='bottom')
 
         self.bx.set(ylabel='Burst Parameter', xlabel='Time (s)')
 
@@ -137,16 +149,17 @@ if __name__ == '__main__':
     t = np.arange(-5, 5, dT)
     cadence = 0.1
     t0 = 0
-    A = 10
-    baseline=1
+    A = 1000
+    baseline = 0
     fwhm = np.linspace(0.1, 2, num=nTrials)
 
     testObj = TestBurstParam(A, t, t0, fwhm, baseline=baseline)
     testObj.calcParam(cadence)
-    testObj.calcThresh(2)
+    testObj.calcThresh(5)
+    testObj.calcHist()
     
     ### Plotting ###
-    fig, ax = plt.subplots(2, sharex=True)
+    fig, ax = plt.subplots(2, sharex=True, figsize=(11, 8))
     testObj.plotTimeseires(ax=ax[0])
     testObj.plotDataDetection(ax=ax[1])
     plt.tight_layout()
