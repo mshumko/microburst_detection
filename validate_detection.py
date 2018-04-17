@@ -146,7 +146,7 @@ class TestBurstParam(CreateFakeData):
 if __name__ == '__main__':
     nTrials = 5
     dT = 0.1
-    t = np.arange(-2, 2, dT)
+    t = np.arange(-5, 5, dT)
     cadence = 0.1
     t0 = 0
     A = 1000
