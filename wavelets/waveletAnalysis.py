@@ -1,7 +1,7 @@
 import sys
 #sys.path.insert(0, '/home/mike/Dropbox/0_firebird_research/fit_peaks/single_fits/')
 import numpy as np
-from wavelets.waveletFunctions import wavelet, wave_signif
+from waveletFunctions import wavelet, wave_signif
 import matplotlib.pylab as plt
 import matplotlib
 import math as m
