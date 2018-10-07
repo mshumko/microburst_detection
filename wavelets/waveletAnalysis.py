@@ -8,9 +8,9 @@ import math as m
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 #import matplotlib.gridspec as gridspec
 import datetime
-sys.path.insert(0, '/home/mike/FIREBIRD/microburst_detector/')
+sys.path.insert(0, '/home/mike/research/mission-tools/firebird/')
 
-#import flag_dropouts
+import flag_dropouts
 import operator
 
 __author__ = 'Mykhaylo Shumko'
