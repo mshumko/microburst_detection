@@ -10,7 +10,13 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import datetime
 sys.path.insert(0, '/home/mike/research/mission-tools/firebird/')
 
-import flag_dropouts
+try:
+    import flag_dropouts
+except ModuleNotFoundError as err:
+    if str(err) == "No module named 'flag_dropouts'":
+        print("No module named 'flag_dropouts', continuing")
+    else:
+        raise
 import operator
 
 __author__ = 'Mykhaylo Shumko'
