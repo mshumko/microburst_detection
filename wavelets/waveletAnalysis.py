@@ -62,7 +62,7 @@ class WaveletDetector():
         self.sig95 = self.power / self.sig95  # where ratio > 1, power is significant
         return
         
-    def waveletFilter(self, lowerPeriod, upperPeriod, SIGNIF_LEVEL = 0.25):
+    def waveletFilter(self, lowerPeriod, upperPeriod):
         """
         NAME:    waveletFilter(wave, sig95, l_s = 0, u_s = 29)
         USE:     This does a band pass and power filtering on the wavelet period-frequency domain. Give it the                   wavelet amplitude array, the power significance array, and the upper and lower scales that will                         be used for filtering. 
@@ -83,8 +83,9 @@ class WaveletDetector():
         self.waveFlt[upperScale:, :] = 0
         self.waveFlt[:lowerScale, :] = 0
     
-        # Significance filter 
-        notSigInd = np.where(self.sig95 < SIGNIF_LEVEL) # Only pass data that has power of (100% - sigThreshold). Usually sigThreshold is 95%. Was 0.25.
+        # Significance filter. Only pass data that has was significant above 
+        # the red noise level defined in self.siglvl
+        notSigInd = np.where(self.sig95 < 1) 
         self.waveFlt[notSigInd] = 0
         return self.waveFlt
         
