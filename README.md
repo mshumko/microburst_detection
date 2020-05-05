@@ -6,7 +6,11 @@ implemented methods are:
 - Signal to background (Blum et al., 2015; Greeley et al., 2019)
 
 All three methods involve some sort of count or standard deviation threshold
-and must be tuned to your data.
+and must be tuned to your data. 
+
+After I thought about it for a minute, the Paul O'Brien's burst parameter and 
+the signal to background methods are similar if not identical. The only 
+difference is over how much time you average over to estimate your background. 
 
 # Dependencies:
 Easiest method to install the numpy and pandas depedencies is with pip and 
