@@ -14,7 +14,7 @@ def moving_average(interval, window_size):
     avg = np.convolve(interval, window, 'same')
     return avg
 
-def obrien_burst_param(counts, cadence, N_WIDTH = 0.100, A_WIDTH = 0.500):
+def obrien_burst_param(counts, cadence, N_WIDTH=0.100, A_WIDTH=0.500):
     """
     NAME: obrien_burst_param(counts, cadence, N_WIDTH = 0.100, A_WIDTH = 0.500)
     USE: Calculates Paul O'brien's microburst parameter on count data. Refer to
