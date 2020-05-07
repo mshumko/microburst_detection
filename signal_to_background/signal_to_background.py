@@ -50,6 +50,9 @@ class SignalToBackground:
         """
         self.criteria_idt = np.where(self.n_std >= std_thresh)[0]
 
+        if len(self.criteria_idt) <= 1:
+            raise ValueError('No detections found')
+
         interval_start, interval_end = locateConsecutiveNumbers(self.criteria_idt)
         self.peak_idt = np.nan*np.ones(interval_start.shape[0])
 
@@ -84,7 +87,6 @@ if __name__ == '__main__':
     s = SignalToBackground(hr['Col_counts'][:, 0], cadence, background_width_s)
     s.significance()
     s.find_microburst_peaks(std_thresh=std_thresh)
-
 
     # Now make plots.
     fig, ax = plt.subplots(2, sharex=True)
