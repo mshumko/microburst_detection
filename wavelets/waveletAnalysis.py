@@ -1,26 +1,12 @@
-import sys
-#sys.path.insert(0, '/home/mike/Dropbox/0_firebird_research/fit_peaks/single_fits/')
 import numpy as np
+import pandas as pd
 from waveletFunctions import wavelet, wave_signif
 import matplotlib.pylab as plt
 import matplotlib
 import math as m
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-#import matplotlib.gridspec as gridspec
 import datetime
-sys.path.insert(0, '/home/mike/research/mission-tools/firebird/')
-
-try:
-    import flag_dropouts
-except ModuleNotFoundError as err:
-    if str(err) == "No module named 'flag_dropouts'":
-        print("No module named 'flag_dropouts', continuing")
-    else:
-        raise
 import operator
-
-__author__ = 'Mykhaylo Shumko'
-
 
 class WaveletDetector():
     def __init__(self, data, time, cadence, **kwargs):
@@ -113,7 +99,6 @@ class WaveletDetector():
         self.dataFlt = tansformConstant*InvTranform
         return self.dataFlt
         
-        
     def TestForMicrobursts(self, dataFlt = None, **kwargs):
         """
         Parameters:
@@ -129,27 +114,26 @@ class WaveletDetector():
         
         COUNT_THRESH = kwargs.get('COUNT_THRESH', 0.05)
         TIME_THRESH = kwargs.get('TIME_THRESH', 1.00)
-        DROPOUT_THRESH = kwargs.get('DROPOUT_THRESH', 0.5)
         
         DATA_GAP_THRESH = int(TIME_THRESH/self.cadence)
-        DROPOUT_THRESH = int(DROPOUT_THRESH/self.cadence)
         
-        if type(self.time[0]) is datetime.datetime:
+        if (isinstance(self.time[0], datetime.datetime) or isinstance(self.time[0], pd.DatetimeIndex)):
             for i in range(len(self.time)-1):
                 tDiff[i] = (self.time[i+1] - self.time[i]).total_seconds()
         else:
             tDiff = np.abs(np.convolve([-1, 1], self.time, mode = 'same'))
     
         # Now determine which events are microbursts and which ones are false positives.
-        dropoutFlag = flag_dropouts.dropOutFlag(self.dataCopy)
+        #dropoutFlag = flag_dropouts.dropOutFlag(self.dataCopy)
         for i in range(DATA_GAP_THRESH, int(len(self.dataCopy) - DATA_GAP_THRESH)):
                 # Apply the microburst filters. 
                 # The 2*cadence is there since the change in data time stamps may
                 # normally be around 30 ms for 18.75 ms cadence.
-                if (dataFlt[i] > COUNT_THRESH \
-                and 1 not in dropoutFlag[i-DROPOUT_THRESH:i+DROPOUT_THRESH]\
-                and np.abs(max(tDiff[(i - DATA_GAP_THRESH):(i + DATA_GAP_THRESH)])) < 2*self.cadence \
-                and self.dataCopy[i] > 100):
+                if (
+                    dataFlt[i] > COUNT_THRESH \
+                    and np.abs(max(tDiff[(i - DATA_GAP_THRESH):(i + DATA_GAP_THRESH)])) < 2*self.cadence \
+                    and self.dataCopy[i] > 100
+                    ):
                     # these are the good detections. 
                     self.indicies = np.append(self.indicies, i)
         return self.indicies
@@ -159,9 +143,8 @@ class WaveletDetector():
         """
         NAME:    findMicroburstPeaks(self, indicies = np.array([]))
         USE:     Calculates the peak of each microburst from an array containing 
-        indicies (burstInd) from the data (data array) which the wavelet detector
-        found to be a microburst.
-        RETURNS: An array of detected microburst peaks.
+                 continious indicies that matched the microburst detection criterion. 
+        RETURNS: An index array of detected microburst peaks.
         MOD:     2016-06-16
         """
         if len(indicies) == 0:
@@ -187,25 +170,6 @@ class WaveletDetector():
                 startValue = endValue
         return self.peaks
         
-    def findMicroburstBounds(self, peaks = np.array([])):
-        """
-        NAME:    findMicroburstBounds(self, peaks = np.array([]))
-        USE:     From an optional array of peaks, calculates the bounds of each
-                 microburst.
-        RETURNS: A dictionary of 'startInd':starInd and 'endInd':endInd
-                 key:array pairs. Error code is -9999
-        MOD:     2016-11-28
-        """
-        if len(peaks) == 0:
-            peaks = self.peaks
-            
-        self.startInd = -9999*np.ones_like(peaks)
-        self.endInd = -9999*np.ones_like(peaks)
-        
-        #for i 
-        # FINISH writing this!
-        return
-        
     def plotPower(self, ax = None):
         """
         ax is the subplot argument.
@@ -224,14 +188,11 @@ class WaveletDetector():
             facecolor='white', zorder=3)
         im = ax.contourf(CS, levels=np.log2(self.levels))
         ax.set_xlabel('UTC')
-        ax.set_ylabel('Period (s)')
-        ax.set_title('d) Wavelet Power Spectrum')
+        ax.set_ylabel('Period [s]')
         # 95# significance contour, levels at -99 (fake) and 1 (95# signif)
-        ax.hold(True)
         ax.contour(self.time, self.period, self.sig95, [-99, 1], colors='k')
         # cone-of-influence, anything "below" is dubious
         ax.plot(self.time, self.coi, 'k')
-        ax.hold(False)
         # format y-scale
         ax.set_yscale('log', basey=2, subsy=None)
         ax.set_ylim([np.min(self.period), np.max(self.period)])
