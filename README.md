@@ -1,23 +1,50 @@
 # Introduction
-This repo contains a few algorithms to detect electron microbursts. The three 
+This repo contains a few algorithms to detect electron microbursts. The two 
 implemented methods are:
-- Paul O'Brien's burst parameter (e.g. O'Brien et al., 2003; Douma et al., 2017; Shumko et al., 2020)
+- Signal to background
 - Wavelet-based filtering 
-- Signal to background (Blum et al., 2015; Greeley et al., 2019)
 
-All three methods involve some sort of count or standard deviation threshold
-and must be tuned to your data. 
-
-After I thought about it for a minute, the Paul O'Brien's burst parameter and 
-the signal to background methods are similar if not identical. The only 
-difference is over how much time you average over to estimate your background. 
+The two methods involve some sort of count or standard deviation threshold
+and must be tuned for your data. The signal to background method is 
+mathematically the same as Paul O'Brien's burst parameter but with 
+different parameters The burst parameter was used in, for example, 
+O'Brien et al., 2003; Douma et al., 2017; Shumko et al., 2020.
 
 # Dependencies:
-Easiest method to install the numpy and pandas depedencies is with pip and 
-the requirements.txt file. 
+Easiest method to install the numpy, pandas, progressbar, and spacepy 
+dependencies is with pip and the requirements.txt file. 
+
 Example: ```pip3 install -r requirements.txt```
 
 # Example Uses:
+
+
+# Project Structure
+├── burst_parameter
+│   └── burst_parameter.py
+├── data
+│   └── FU4_microbursts.csv
+├── detect_microbursts.py
+├── dirs.py
+├── example_plots
+├── misc
+│   ├── locate_consecutive_numbers.py
+│   └── microburst_browser.py
+├── README.md
+├── requirements.txt
+├── sensitivity_models
+│   ├── mc_model_config.py
+│   ├── mc_model.py
+│   └── stb_sensitivity.py
+├── signal_to_background
+│   ├── signal_to_background_loop.py
+│   └── signal_to_background.py
+├── validate_detection.py
+├── validate_sampex.py
+└── wavelets
+    ├── waveletAnalysis.py
+    ├── waveletFunctions.py
+    └── wavelet_test_scipt.p
 
 # Bibliography
 
