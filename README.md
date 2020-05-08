@@ -24,7 +24,11 @@ To play around with this detection method the script in the ```python3 if __name
 The ```signal_to_background_loop.py``` calls ```signal_to_background.py``` on all FIREBIRD HiRes data and saves it to a csv file in ```<<project_folder>>/data/``` folder where ```<<project_folder>>``` is specified in dirs.py.
 
 ## Manually sort microbursts
-Once you ran ```signal_to_background_loop.py``` and the catalog file is generated, you can use the microburst browser located in ```misc/microburst_browser.py``` GUI to sort the 
+Once you ran ```signal_to_background_loop.py``` and the catalog file is generated, you can use the microburst browser located in ```misc/microburst_browser.py``` GUI to sort the microburst detections. In this GUI you can navigate forward and backward in the list and mark microbursts. Besides the navigation buttons you can also use your keyboard keys to navigate. If you accidently mark something as microburst, press it again and it will be removed. 
+
+![Microburst browser](/example_plots/microburst_browser.png)
+
+Upon exiting the browser the marked microbursts will be saved to where the original catalog was located, suffixed with "_sorted". If you open the browser again and the sorted catalog is populated, the browser will jump to the most recent microburst detection. Therefore you can stop and pick up your sorting from the last microburst detection.
 
 
 # Project Structure
