@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import progressbar
 
-import signal_to_background.signal_to_background as signal_to_background
+import microburst_detection.signal_to_background.signal_to_background as signal_to_background
 import mc_model
 import mc_model_config
 
