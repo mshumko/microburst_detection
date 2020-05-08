@@ -20,6 +20,7 @@ Example: ```pip3 install -r requirements.txt```
 
 
 # Project Structure
+```
 ├── burst_parameter
 │   └── burst_parameter.py
 ├── data
@@ -44,7 +45,8 @@ Example: ```pip3 install -r requirements.txt```
 └── wavelets
     ├── waveletAnalysis.py
     ├── waveletFunctions.py
-    └── wavelet_test_scipt.p
+    └── wavelet_test_scipt.py
+```
 
 # Bibliography
 
