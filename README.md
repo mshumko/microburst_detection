@@ -18,15 +18,17 @@ Example: ```pip3 install -r requirements.txt```
 
 # Example Uses:
 
+## Signal to background detection
+To play around with this detection method the script in the ```python3 if __name__ == '__main__'``` block of ```signal_to_background.py``` has the parameters to tweak this detector, change the data analyzed, and quickly visualize the results. The two classes are very similar, one works with generic 1d count time series (from one energy channel), while the other works with 2d count time series where the two dimensions are: nTime x nEnergyChannels.
+
+The ```signal_to_background_loop.py``` calls ```signal_to_background.py``` on all FIREBIRD HiRes data and saves it to a csv file in ```<<project_folder>>/data/``` folder where ```<<project_folder>>``` is specified in dirs.py.
+
 
 # Project Structure
 ```
-├── burst_parameter
-│   └── burst_parameter.py
 ├── data
-│   └── FU4_microbursts.csv
-├── detect_microbursts.py
-├── example_plots
+│   └── FU4_microbursts.csv - An example catalog. Feel free to rewrite
+├── example_plots 
 ├── misc
 │   ├── locate_consecutive_numbers.py - Helper function to find continious intervals of peaked data and isolate individual microbursts.
 │   └── microburst_browser.py - A GUI to sort microburst detections.
