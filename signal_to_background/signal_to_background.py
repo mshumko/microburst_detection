@@ -12,11 +12,17 @@ class SignalToBackground:
     def __init__(self, counts, cadence, background_width_s):
         """ 
         This class implements the signal to background 
-        microburst detection. 
+        microburst detection. This method is a generalization 
+        of the O'Brien 2003 burst parameter that uses a 0.5 
+        second baseline instead of the longer baselines used
+        in the examples here.
 
-        Warning: Be bareful and feed in the counts array 
-        with units of counts/bin, otherwise the Poisson
-        significance will be wrong.
+        Parameters
+        ----------
+        counts : array
+            Array of counts. Should be continious
+        background_width_s : float
+            The baseline width in time to calculate the running mean
         """
         self.counts = counts
 
@@ -30,9 +36,9 @@ class SignalToBackground:
 
     def significance(self):
         """
-        Calculates the number of standard deviations, assuming Poisson
-        statistics, that a count value is above a rolling average 
-        background of length self.background_width_s.
+        Calculate the number of background standard deviations, 
+        assuming Poisson statistics, that a count value is above
+        a rolling average background of length self.background_width_s.
 
         Returns a pandas DataFrame object that can be 
         converted to numpy using .to_numpy() method.
@@ -44,9 +50,15 @@ class SignalToBackground:
     def find_microburst_peaks(self, std_thresh=2):
         """
         This method finds the data intervals where the 
-        microburst criteria is satisfied. For for 
+        microburst criteria is satisfied. Then for
         every interval, calculate the time of the highest
         peak.
+
+        Parameters
+        ----------
+        std_thresh : float
+            The baseline standard deviation threshold above the baseline
+            that the data point must be to satisfy the microburst criteria
         """
         self.criteria_idt = np.where(self.n_std >= std_thresh)[0]
 
@@ -126,7 +138,6 @@ class FirebirdSignalToBackground(SignalToBackground):
         """
         background_width_samples = int(self.background_width_s/self.cadence)
         return counts.rolling(background_width_samples, center=True, axis=0).mean()
-
 
 
 if __name__ == '__main__':

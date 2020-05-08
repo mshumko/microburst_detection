@@ -9,16 +9,29 @@ import signal_to_background
 import microburst_detection.dirs
 
 class SignalToBackgroundLoop:
-    def __init__(self, sc_id, background_width_s, std_thresh, channel=0):
+    def __init__(self, sc_id, background_width_s, std_thresh, detect_channel=0):
         """
         This program uses signal_to_background detection code to
         loop over all of the FIREBIRD data and detect all 
         microbursts.
+
+        Parameters
+        ----------
+        sc_id : int
+            Spacecraft id. Either 3 or 4
+        background_width_s : float
+            The baseline width in time to calculate the running mean
+        std_thresh : float
+            The baseline standard deviation threshold above the baseline
+            that the data point must be to satisfy the microburst criteria
+        detect_channel : int, optional
+            The FIREBIRD energy channel number to use for std_thresh 
+            critera. This is channel 0 by default.
         """
         self.sc_id = sc_id
         self.background_width_s = background_width_s
         self.std_thresh = std_thresh
-        self.channel = channel
+        self.detect_channel = detect_channel
 
         # Find all of the HiRes files
         search_str = f'FU{sc_id}_Hires_*.txt'
@@ -28,7 +41,16 @@ class SignalToBackgroundLoop:
 
     def loop(self, save_keys='default'):
         """
+        Loop over all the HiRes data and run the signal_to_background
+        microburst detector on every day. For the detected microbursts
+        save a handful of columns specified by the save_keys kwarg to
+        self.microburst_list.
 
+        If save_keys='default', a default set of keys will be used
+        including time, the spatial, and geomagnetic coordinates. These 
+        keys must be in the HiRes data. Furthermore if you're running
+        this on the FIREBIRD data, the baseline standard deviation values
+        for the 6 energy channels will be saved as well.
         """
         if save_keys == 'default':
             save_keys = (['Time', 'Lat', 'Lon', 'Alt', 
@@ -54,7 +76,8 @@ class SignalToBackgroundLoop:
                 )
             s.significance()
             try:
-                s.find_microburst_peaks(std_thresh=self.std_thresh)
+                s.find_microburst_peaks(std_thresh=self.std_thresh, 
+                                        detect_channel=detect_channel)
             except ValueError as err:
                 if str(err) == 'No detections found':
                     continue
@@ -81,7 +104,8 @@ class SignalToBackgroundLoop:
 
     def save_microbursts(self, save_name=None):
         """
-
+        Save the microburst list to a csv file in the data/ directory.
+        If the directory does not exist, one will be created.
         """
         save_dir = pathlib.Path(
             microburst_detection.dirs.project_dir,
