@@ -49,7 +49,7 @@ class SignalToBackgroundLoop:
 
             # All of the code to detect microbursts is here.
             s = signal_to_background.FirebirdSignalToBackground(
-                hr['Col_counts'][:, self.channel], cadence, 
+                hr['Col_counts'], cadence, 
                 self.background_width_s
                 )
             s.significance()
@@ -68,9 +68,10 @@ class SignalToBackgroundLoop:
             # the daily list
             for i, peak_i in enumerate(s.peak_idt):
                 # Save certain HiRes heys
+                #print(s.n_std.shape)
                 daily_detections[i, :len(hr_keys)] = [hr[col][peak_i] for col in hr_keys] 
                 # Save the significance above baseline values for all channels.
-                daily_detections[i, len(hr_keys):] = s.n_std.loc[peak_i]
+                daily_detections[i, len(hr_keys):] = s.n_std.loc[peak_i, :]
                                             
             self.microburst_list = np.concatenate((self.microburst_list, daily_detections))
 
