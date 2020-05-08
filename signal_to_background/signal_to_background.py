@@ -72,6 +72,39 @@ class SignalToBackground:
         background_width_samples = int(self.background_width_s/self.cadence)
         return counts.rolling(background_width_samples, center=True).mean()
 
+
+class FirebirdSignalToBackground(SignalToBackground):
+    def __init__(self, counts, cadence, background_width_s):
+        """
+        This child class of SignalToBackground finds peaks but reports
+        the standard deviations for all 6 FIREBIRD channels.
+        """
+        super().__init__(counts, cadence, background_width_s)
+        return
+
+    def significance(self):
+        """
+        Calculates the number of standard deviations, assuming Poisson
+        statistics, that a count value is above a rolling average 
+        background of length self.background_width_s. Does this for the
+        6 FIREBIRD channels.
+
+        Returns a pandas DataFrame object that can be 
+        converted to numpy using .to_numpy() method.
+        """
+        self.rolling_average = self._running_average(self.counts)
+        self.n_std = (self.counts-self.rolling_average)/np.sqrt(self.rolling_average+1)
+        return self.n_std
+
+    def _running_average(self, counts):
+        """
+        Calculate the running average of the counts array.
+        """
+        background_width_samples = int(self.background_width_s/self.cadence)
+        return counts.rolling(background_width_samples, center=True, axis=0).mean()
+
+
+
 if __name__ == '__main__':
     hr_name = 'FU4_Hires_2019-09-27_L2.txt'
     background_width_s = 2

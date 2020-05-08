@@ -9,7 +9,7 @@ import signal_to_background
 import microburst_detection.dirs
 
 class SignalToBackgroundLoop:
-    def __init__(self, sc_id, background_width_s, std_thresh):
+    def __init__(self, sc_id, background_width_s, std_thresh, channel=0):
         """
         This program uses signal_to_background detection code to
         loop over all of the FIREBIRD data and detect all 
@@ -18,6 +18,7 @@ class SignalToBackgroundLoop:
         self.sc_id = sc_id
         self.background_width_s = background_width_s
         self.std_thresh = std_thresh
+        self.channel = channel
 
         # Find all of the HiRes files
         search_str = f'FU{sc_id}_Hires_*.txt'
@@ -30,8 +31,11 @@ class SignalToBackgroundLoop:
 
         """
         if save_keys == 'default':
-            save_keys = ['Time', 'Lat', 'Lon', 'Alt', 
-                        'McIlwainL', 'MLT', 'kp']
+            save_keys = (['Time', 'Lat', 'Lon', 'Alt', 
+                        'McIlwainL', 'MLT', 'kp'] + 
+                        [f'sig{i}' for i in range(6)])
+        # hr_keys only has the keys that are in the HiRes data.
+        hr_keys = [col for col in save_keys if 'sig' not in col]
         
         #self.microburst_list = pd.DataFrame(columns=save_keys)
         self.microburst_list = np.nan*np.ones(
@@ -45,7 +49,7 @@ class SignalToBackgroundLoop:
 
             # All of the code to detect microbursts is here.
             s = signal_to_background.SignalToBackground(
-                hr['Col_counts'][:, 0], cadence, 
+                hr['Col_counts'][:, self.channel], cadence, 
                 self.background_width_s
                 )
             s.significance()
@@ -63,7 +67,8 @@ class SignalToBackgroundLoop:
             # Loop over each microburst detection and append to 
             # the daily list
             for i, peak_i in enumerate(s.peak_idt):
-                daily_detections[i, :] = [hr[col][peak_i] for col in save_keys]
+                daily_detections[i, :len(hr_keys)] = [hr[col][peak_i] for col in hr_keys] 
+                                            
 
             self.microburst_list = np.concatenate((self.microburst_list, daily_detections))
 
