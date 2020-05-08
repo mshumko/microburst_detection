@@ -1,7 +1,3 @@
-# This program uses signal_to_background detection code to
-# loop over all of the FIREBIRD data and detect all 
-# microbursts.
-
 import numpy as np
 import pandas as pd
 import pathlib
@@ -12,12 +8,12 @@ import spacepy
 import signal_to_background
 import microburst_detection.dirs
 
-#signal_to_background.SignalToBackground
-
 class SignalToBackgroundLoop:
     def __init__(self, sc_id, background_width_s, std_thresh):
         """
-
+        This program uses signal_to_background detection code to
+        loop over all of the FIREBIRD data and detect all 
+        microbursts.
         """
         self.sc_id = sc_id
         self.background_width_s = background_width_s
