@@ -18,4 +18,4 @@ peak_width_dist = scipy.stats.uniform(loc=0, scale=10)
 #n_widths = 100 # Take n_widths from peak_width_dist
 # Generate n_iter time series with noise, with a peak width 
 # randomly picked from peak_width_dist
-n_iter = 100000
+n_iter = 10000

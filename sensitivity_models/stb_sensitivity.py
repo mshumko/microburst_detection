@@ -12,6 +12,7 @@ detected = np.ones(m.peak_widths.shape[0], dtype=bool)
 
 background_width_s = 10
 sig_thresh_std = 10
+bins = np.linspace(0, 10)
 
 for i in progressbar.progressbar(range(m.counts.shape[1])):
     counts = m.counts[:, i]
@@ -42,7 +43,6 @@ fig, ax = plt.subplots(3, figsize=(6, 7), sharex=True)
 
 fig2, bx = plt.subplots()
 
-bins = np.arange(0, 11)
 ax[0].hist(m.peak_widths, bins=bins, histtype='step', lw=3, color='k')
 ax[1].hist(m.peak_widths[detected], bins=bins, histtype='step', lw=3, color='k')
 ax[2].hist(m.peak_widths[~detected], bins=bins, histtype='step', lw=3, color='k')
