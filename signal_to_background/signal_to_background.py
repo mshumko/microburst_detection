@@ -93,7 +93,7 @@ class FirebirdSignalToBackground(SignalToBackground):
         converted to numpy using .to_numpy() method.
         """
         self.rolling_average = self._running_average(self.counts)
-        self.n_std = (self.counts-self.rolling_average)/np.sqrt(self.rolling_average+1)
+        self.n_std = np.subtract(self.counts, self.rolling_average)/np.sqrt(self.rolling_average+1)
         return self.n_std
 
     def _running_average(self, counts):
@@ -117,18 +117,23 @@ if __name__ == '__main__':
     cadence = float(hr.attrs['CADENCE'])
 
     # All of the code to detect microbursts is here.
-    s = SignalToBackground(hr['Col_counts'][:, 0], cadence, background_width_s)
+    s = FirebirdSignalToBackground(hr['Col_counts'], cadence, background_width_s)
     s.significance()
     s.find_microburst_peaks(std_thresh=std_thresh)
 
     # Now make plots.
     fig, ax = plt.subplots(2, sharex=True)
+    colors = ['r', 'g', 'b', 'k', 'c', 'y']
 
-    ax[0].plot(hr['Time'], hr['Col_counts'][:, 0], 'b', label='Col Counts')
+    for i in range(6):
+        ax[0].plot(hr['Time'], hr['Col_counts'][:, i], colors[i], label=f'Ch {i}')
+        ax[0].plot(hr['Time'], s.rolling_average[i], colors[i], ls='--')
+        ax[1].plot(hr['Time'], s.n_std[i], colors[i])
+
     ax[0].scatter(hr['Time'][s.peak_idt], hr['Col_counts'][s.peak_idt, 0], 
                 c='r', marker='*', label='Microburst peaks')
-    ax[0].plot(hr['Time'], s.rolling_average, 'r', label=f'{background_width_s} s average')
-    ax[1].plot(hr['Time'], s.n_std, label='std above background')
+    # ax[0].plot(hr['Time'], s.rolling_average, 'r', label=f'{background_width_s} s average')
+    
     ax[1].axhline(std_thresh, c='k', label='std thresh')
 
     ax[0].set(ylabel='FIREBIRD Col counts\n[counts/bin]', 
