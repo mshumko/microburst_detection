@@ -21,7 +21,7 @@ Example: ```pip3 install -r requirements.txt```
 ## Signal to background detection
 To play around with this detection method the script in the ```python3 if __name__ == '__main__'``` block of ```signal_to_background.py``` has the parameters to tweak this detector, change the data analyzed, and quickly visualize the results. The two classes are very similar, one works with generic 1d count time series (from one energy channel), while the other works with 2d count time series where the two dimensions are: nTime x nEnergyChannels.
 
-![Example of the signal-to-background program flagging microbursts](/example_plots/signal_to_background_example.png.png)
+![Example of the signal-to-background program flagging microbursts](/example_plots/signal_to_background_example.png)
 
 The ```signal_to_background_loop.py``` calls ```signal_to_background.py``` on all FIREBIRD HiRes data and saves it to a csv file in ```<<project_folder>>/data/``` folder where ```<<project_folder>>``` is specified in dirs.py.
 
@@ -29,6 +29,15 @@ The ```signal_to_background_loop.py``` calls ```signal_to_background.py``` on al
 The other microburst detection method is based on wavelet filtering in the frequency-time domain. This method is heavily based on the [Torrence and Compo, 1998](https://psl.noaa.gov/people/gilbert.p.compo/Torrence_compo1998.pdf) paper and the wavelet analysis code is adapted from their [GitHub repo](https://github.com/chris-torrence/wavelets)
 
 ![Wavelet microburst detection](/example_plots/wavelet_detection_example.png)
+
+In a nutshell the wavelet-based method includes the following steps.
+1. Transform the time series into the wavelet domain using a predetermined wavelet basis (The Mexican Hat wavelet basis by default).
+2. Filter out the statistically insignificant wavelet power using a red-noise spectrum. 
+3. Filter the wavelet power by oscillation periods.
+4. Inverse wavelet transform whatever is left.
+5. Apply a threshold test. Anything above the threshold is a candidate microburst. Typically not just one data point is above the threshold so every continious interval above the threshold is identified by the ```locateConsecutiveNumbers``` program and in each interval the peak count rate is found. 
+
+More details are provided by [Torrence and Compo, 1998](https://psl.noaa.gov/people/gilbert.p.compo/Torrence_compo1998.pdf)
 
 
 ## Manually sort microbursts
