@@ -12,18 +12,21 @@ import waveletAnalysis
 import dirs
 
 # Load example HiRes data
-hr_name = 'FU4_Hires_2015-02-02_L2.txt'
+hr_name = 'FU4_Hires_2019-09-27_L2.txt'
 sc_id = 4    
 hr_path = str(pathlib.Path(dirs.firebird_dir(sc_id), hr_name))
 hr = spacepy.datamodel.readJSONheadedASCII(hr_path)
 # Convert time array
 hr['Time'] = pd.to_datetime(hr['Time'])
 
-# Filter the data by time to reduce computational time.
-startTime = datetime.datetime(2015, 2, 2, 6, 11, 0)
-endTime = datetime.datetime(2015, 2, 2, 6, 13, 0)
-validInd = np.where((hr['Time'] > startTime) & (hr['Time'] < endTime))[0]
-assert len(validInd) > 0, "No data found in the time range specified!"
+# # Filter the data by time to reduce computational time.
+if True:
+    startTime = datetime.datetime(2019, 9, 27, 18, 26, 30)
+    endTime = datetime.datetime(2019, 9, 27, 18, 29, 30)
+    validInd = np.where((hr['Time'] > startTime) & (hr['Time'] < endTime))[0]
+    assert len(validInd) > 0, "No data found in the time range specified!"
+else:
+    validInd = np.arange(hr['Time'].shape[0])
 
 channel = 0
 
