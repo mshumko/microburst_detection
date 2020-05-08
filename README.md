@@ -26,26 +26,24 @@ Example: ```pip3 install -r requirements.txt```
 ├── data
 │   └── FU4_microbursts.csv
 ├── detect_microbursts.py
-├── dirs.py
 ├── example_plots
 ├── misc
-│   ├── locate_consecutive_numbers.py
-│   └── microburst_browser.py
+│   ├── locate_consecutive_numbers.py - Helper function to find continious intervals of peaked data and isolate individual microbursts.
+│   └── microburst_browser.py - A GUI to sort microburst detections.
 ├── README.md
-├── requirements.txt
-├── sensitivity_models
-│   ├── mc_model_config.py
-│   ├── mc_model.py
-│   └── stb_sensitivity.py
+├── dirs.py - The FIREBIRD and project directories 
+├── requirements.txt - List of dependency libraries
+├── sensitivity_models - Monte Carlo model to quantify the sensitivity of microburst detectors to microburst widths 
+│   ├── mc_model_config.py - MC model configuration
+│   ├── mc_model.py - The MC model that generates lots of gaussian time series with noise
+│   └── stb_sensitivity.py - Test the sensitivity of the signal to background method
 ├── signal_to_background
-│   ├── signal_to_background_loop.py
-│   └── signal_to_background.py
-├── validate_detection.py
-├── validate_sampex.py
+│   ├── signal_to_background_loop.py - Loop the detector over the FIREBIRD data and save to a csv file.
+│   └── signal_to_background.py - The main program to identify microbursts
 └── wavelets
-    ├── waveletAnalysis.py
-    ├── waveletFunctions.py
-    └── wavelet_test_scipt.py
+    ├── waveletAnalysis.py - A wrapper to find microbursts in the FIREBIRD data. Contains functions to transform and inverse wavelet transforms 
+    ├── waveletFunctions.py - Wavelet function code from https://paos.colorado.edu/research/wavelets/
+    └── wavelet_test_scipt.py - A script to visualize the microburst detections. Useful if you want to tweak parameters.
 ```
 
 # Bibliography
