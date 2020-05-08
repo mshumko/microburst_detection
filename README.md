@@ -23,6 +23,9 @@ To play around with this detection method the script in the ```python3 if __name
 
 The ```signal_to_background_loop.py``` calls ```signal_to_background.py``` on all FIREBIRD HiRes data and saves it to a csv file in ```<<project_folder>>/data/``` folder where ```<<project_folder>>``` is specified in dirs.py.
 
+## Manually sort microbursts
+Once you ran ```signal_to_background_loop.py``` and the catalog file is generated, you can use the microburst browser located in ```misc/microburst_browser.py``` GUI to sort the 
+
 
 # Project Structure
 ```

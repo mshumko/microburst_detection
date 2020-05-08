@@ -116,7 +116,7 @@ class FirebirdSignalToBackground(SignalToBackground):
             if start == end:
                 end+=1
             offset = self.criteria_idt[start]
-            self.peak_idt[i] = offset + np.argmax(self.counts.loc[self.criteria_idt[start:end]])
+            self.peak_idt[i] = offset + np.argmax(self.counts.loc[self.criteria_idt[start:end], detect_channel])
         self.peak_idt = self.peak_idt.astype(int)
         return self.peak_idt
 
