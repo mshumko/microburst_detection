@@ -189,8 +189,8 @@ class Browser:
                         current_row['Time'].time()))
         self.ax.set_ylabel(f'Col counts/{self.cadence} ms')
         self.ax.set_xlabel('UTC')
-        if isinstance(current_row, pd.DataFrame):
-            self._print_aux_info(current_row)
+        # if isinstance(current_row, pd.DataFrame):
+        self._print_aux_info(current_row)
         self.ax.set_xlim(*time_range)
         plt.draw()
         return

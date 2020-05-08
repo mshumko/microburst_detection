@@ -96,6 +96,30 @@ class FirebirdSignalToBackground(SignalToBackground):
         self.n_std = np.subtract(self.counts, self.rolling_average)/np.sqrt(self.rolling_average+1)
         return self.n_std
 
+    def find_microburst_peaks(self, std_thresh=2, detect_channel=0):
+        """
+        This method finds the data intervals where the 
+        microburst criteria is satisfied. For for 
+        every interval, calculate the time of the highest
+        peak.
+        """
+        self.criteria_idt = np.where(self.n_std.loc[:, detect_channel] >= std_thresh)[0]
+
+        if len(self.criteria_idt) <= 1:
+            raise ValueError('No detections found')
+
+        interval_start, interval_end = locateConsecutiveNumbers(self.criteria_idt)
+        self.peak_idt = np.nan*np.ones(interval_start.shape[0])
+
+        # Loop over each continous interval and find the peak index.
+        for i, (start, end) in enumerate(zip(interval_start, interval_end)):
+            if start == end:
+                end+=1
+            offset = self.criteria_idt[start]
+            self.peak_idt[i] = offset + np.argmax(self.counts.loc[self.criteria_idt[start:end]])
+        self.peak_idt = self.peak_idt.astype(int)
+        return self.peak_idt
+
     def _running_average(self, counts):
         """
         Calculate the running average of the counts array.
