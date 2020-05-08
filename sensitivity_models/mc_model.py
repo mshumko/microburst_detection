@@ -53,11 +53,11 @@ class ModelPeaks:
             self.counts = np.random.poisson(lam=self.counts)
         return
 
-    def visualize_model(self, n_plot=10, ax=None):
+    def visualize_model(self, n_plot=10, ax=None, bins=None):
         """
         Visualize a subset of the random Gaussian profiles.
         """
-        idx_plot = np.random.randint(0, self.counts.shape[0], size=n_plot)
+        idx_plot = np.random.randint(0, self.counts.shape[1], size=n_plot)
 
         if ax is None:
             _, ax = plt.subplots(2)
@@ -66,7 +66,8 @@ class ModelPeaks:
             ax[0].plot(self.time_array, counts_i, 'k')
 
         # Histogram the peak widths
-        ax[1].hist(self.peak_widths, histtype='step', lw=3, color='k')
+        ax[1].hist(self.peak_widths, histtype='step', 
+                    lw=3, color='k', bins=bins)
         
         ax[0].set(xlabel='Time', ylabel='Counts', 
             title='Microburst Width Monte Carlo Model')

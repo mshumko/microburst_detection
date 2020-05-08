@@ -27,16 +27,42 @@ for i in progressbar.progressbar(range(m.counts.shape[1])):
     else:
         detected[i] = False
 
-fig, ax = plt.subplots(3, sharex=True, figsize=(6, 10))
+
+def visualize_peaks(time, counts, ax, n_plot=20):
+    """
+    Visualize a subset of the random Gaussian profiles.
+    """
+    idx_plot = np.random.randint(0, counts.shape[1], size=n_plot)
+    
+    for counts_i in counts[:, idx_plot].T:
+        ax.plot(time, counts_i, 'k')
+    return
+
+fig, ax = plt.subplots(4, figsize=(6, 7))
+
+# fig3 = plt.figure(constrained_layout=True)
+# gs = fig3.add_gridspec(3, 3)
+# f3_ax1 = fig3.add_subplot(gs[0, :])
 
 bins = np.arange(0, 11)
 ax[0].hist(m.peak_widths, bins=bins, histtype='step', lw=3, color='k')
-ax[1].hist(m.peak_widths[detected], bins=bins, histtype='step', lw=3, color='k')
-ax[2].hist(m.peak_widths[~detected], bins=bins, histtype='step', lw=3, color='k')
+visualize_peaks(m.time_array, m.counts, ax[1])
+ax[2].hist(m.peak_widths[detected], bins=bins, histtype='step', lw=3, color='k')
+ax[3].hist(m.peak_widths[~detected], bins=bins, histtype='step', lw=3, color='k')
 
-ax[0].set(ylabel='True number of peaks', 
-        title='Signal-to-baseline Sensitivity\nMonte Carlo Model')
-ax[1].set(ylabel='# of peaks detected')
-ax[2].set(xlabel='Peak width [s]', ylabel='# of peaks not detected')
+y_lims = ax[0].get_ylim()
 
+ax[0].set(xlabel='Peak width [s]', ylabel='True number of peaks', 
+        title='Signal-to-baseline Detector Sensitivity\nMonte Carlo Model',
+        ylim=(None, 1.5*y_lims[1]))
+ax[-2].set(xlabel='Peak width [s]', ylabel='# of peaks detected')
+ax[-1].set(xlabel='Peak width [s]', ylabel='# of peaks not detected')
+
+annotate_str = (f'background_width = {background_width_s} s\n'
+                f'std_thresh = {sig_thresh_std}\n'
+                f'peak_amplitude = {mc_model_config.peak_a}\n'
+                f'background_amplitude = {mc_model_config.background_a}\n')
+ax[0].text(0.99, 0.99, annotate_str, transform=ax[0].transAxes, ha='right', va='top')
+
+plt.tight_layout()
 plt.show()
