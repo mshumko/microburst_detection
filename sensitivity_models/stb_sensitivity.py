@@ -10,9 +10,9 @@ m = mc_model.ModelPeaks(mc_model_config) # Generate a bunch of time series.
 
 detected = np.ones(m.peak_widths.shape[0], dtype=bool)
 
-background_width_s = 10
+background_width_s = 0.5
 sig_thresh_std = 10
-bins = np.linspace(0, 10)
+bins = np.linspace(0, 3)
 
 for i in progressbar.progressbar(range(m.counts.shape[1])):
     counts = m.counts[:, i]
@@ -39,21 +39,21 @@ def visualize_peaks(time, counts, ax, n_plot=20):
         ax.plot(time, counts_i, 'k')
     return
 
-fig, ax = plt.subplots(3, figsize=(6, 7), sharex=True)
+fig, ax = plt.subplots(2, figsize=(6, 7), sharex=True)
 
 fig2, bx = plt.subplots()
 
 ax[0].hist(m.peak_widths, bins=bins, histtype='step', lw=3, color='k')
 ax[1].hist(m.peak_widths[detected], bins=bins, histtype='step', lw=3, color='k')
-ax[2].hist(m.peak_widths[~detected], bins=bins, histtype='step', lw=3, color='k')
+# ax[2].hist(m.peak_widths[~detected], bins=bins, histtype='step', lw=3, color='k')
 
 y_lims = ax[0].get_ylim()
 
 ax[0].set(ylabel='True number of peaks', 
         title='Signal-to-baseline Detector Sensitivity\nMonte Carlo Model',
         ylim=(None, 1.5*y_lims[1]))
-ax[1].set(ylabel='# of peaks detected')
-ax[2].set(xlabel='Peak width [s]', ylabel='# of peaks not detected')
+ax[1].set(ylabel='# of peaks detected', xlabel='Peak width [s]')
+# ax[2].set(xlabel='Peak width [s]', ylabel='# of peaks not detected')
 
 annotate_str = (f'background_width = {background_width_s} s\n'
                 f'std_thresh = {sig_thresh_std}\n'

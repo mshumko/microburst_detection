@@ -10,7 +10,7 @@ cadence_s = 0.1
 # background amplitude
 background_a = 0 
 # Peak amplitude
-peak_a = 100 
+peak_a = 500 
 # uniform peak widths between 0 and 10 seconds.
 peak_width_dist = scipy.stats.uniform(loc=0, scale=10) 
 
