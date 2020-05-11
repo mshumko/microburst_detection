@@ -10,12 +10,12 @@ cadence_s = 0.1
 # background amplitude
 background_a = 0 
 # Peak amplitude
-peak_a = 500 
+peak_a = 100 
 # uniform peak widths between 0 and 10 seconds.
-peak_width_dist = scipy.stats.uniform(loc=0, scale=10) 
+peak_width_dist = scipy.stats.uniform(loc=0, scale=5) 
 
 ### Simulation settings
 #n_widths = 100 # Take n_widths from peak_width_dist
 # Generate n_iter time series with noise, with a peak width 
 # randomly picked from peak_width_dist
-n_iter = 10000
+n_iter = 100000
