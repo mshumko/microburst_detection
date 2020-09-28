@@ -1,4 +1,6 @@
 # The code works with the following exact requirements.
+# (Not tested with other versions. Feel free to install
+# the dependencies yourself or change the "==" to ">=".)
 numpy==1.18.1
 pandas==1.0.3
 spacepy==0.2.1
