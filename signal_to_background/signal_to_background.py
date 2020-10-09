@@ -9,7 +9,7 @@ from microburst_detection import dirs
 from microburst_detection.misc.locate_consecutive_numbers import locateConsecutiveNumbers
 
 class SignalToBackground:
-    def __init__(self, counts, cadence, background_width_s):
+    def __init__(self, counts, cadence, background_width_s, microburst_width_s):
         """ 
         This class implements the signal to background 
         microburst detection. This method is a generalization 
@@ -17,12 +17,21 @@ class SignalToBackground:
         second baseline instead of the longer baselines used
         in the examples here.
 
+        To reproduce the O'Brien burst parameter, set 
+        background_width_s = 0.5 and microburst_width_s=0.1.
+
         Parameters
         ----------
         counts : array
-            Array of counts. Should be continious
+            Array of counts. Should be continuous
+        cadence : float
+            Instrument cadence (seconds)
+        microburst_width_s : float
+            The duration to seconds integrate the signal, i.e. the n100 
+            parameter in the O'Brien 2003 paper.
         background_width_s : float
-            The baseline width in time to calculate the running mean
+            The baseline width in seconds to calculate the running mean,
+            i.e. the a500 parameter in the O'Brien paper.
         """
         self.counts = counts
 
@@ -32,6 +41,7 @@ class SignalToBackground:
 
         self.cadence = cadence
         self.background_width_s = background_width_s
+        self.microburst_width_s = microburst_width_s
         return
 
     def significance(self):
@@ -43,8 +53,13 @@ class SignalToBackground:
         Returns a pandas DataFrame object that can be 
         converted to numpy using .to_numpy() method.
         """
-        self.rolling_average = self._running_average(self.counts)
-        self.n_std = (self.counts-self.rolling_average)/np.sqrt(self.rolling_average+1)
+        self.microburst_rolling_average = self._running_average(self.counts, 
+            self.microburst_width_s)
+        self.background_rolling_average = self._running_average(self.counts, 
+            self.background_width_s)
+        
+        diff = (self.microburst_rolling_average-self.background_rolling_average)
+        self.n_std = diff/np.sqrt(self.background_rolling_average+1)
         return self.n_std
 
     def find_microburst_peaks(self, std_thresh=2):
@@ -77,11 +92,11 @@ class SignalToBackground:
         self.peak_idt = self.peak_idt.astype(int)
         return self.peak_idt
 
-    def _running_average(self, counts):
+    def _running_average(self, counts, time_window_s):
         """
         Calculate the running average of the counts array.
         """
-        background_width_samples = int(self.background_width_s/self.cadence)
+        background_width_samples = int(time_window_s/self.cadence)
         return counts.rolling(background_width_samples, center=True).mean()
 
 
