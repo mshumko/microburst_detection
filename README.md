@@ -38,11 +38,11 @@ The other microburst detection method is based on wavelet filtering in the frequ
 ![Wavelet microburst detection](/example_plots/wavelet_detection_example.png)
 
 In a nutshell the wavelet-based method includes the following steps.
-1. Transform the time series into the wavelet domain using a predetermined wavelet basis (The Mexican Hat wavelet basis by default).
+1. Transform the time series into the wavelet domain using a predetermined wavelet basis, as shown in Panels (a) -> (b). (The Mexican Hat wavelet basis by default).
 2. Filter out the statistically insignificant wavelet power using a red-noise spectrum. 
-3. Filter the wavelet power by oscillation periods.
-4. Inverse wavelet transform whatever is left.
-5. Apply a threshold test. Anything above the threshold is a candidate microburst. Typically not just one data point is above the threshold so every continious interval above the threshold is identified by the ```locateConsecutiveNumbers``` program and in each interval the peak count rate is found. 
+3. Filter the wavelet power by oscillation period (panel (b) shows the white-hached power spectrum that is filtered out).
+4. Inverse wavelet transform the remaining wavelet spectrum and you get the filtered counts, in arbitrary units in Panel (c).
+5. Apply a threshold test. Anything above the blue dashed line threshold in Panel C is a candidate microburst. Typically more than one data point is above the threshold for each interval, so every continuous interval above the threshold is identified by the ```locate_consecutive_numbers``` program and in each interval the peak count rate is found. 
 
 More details are provided by [Torrence and Compo, 1998](https://psl.noaa.gov/people/gilbert.p.compo/Torrence_compo1998.pdf)
 
