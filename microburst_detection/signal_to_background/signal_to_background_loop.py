@@ -5,11 +5,11 @@ import progressbar
 
 import spacepy
 
-from microburst_detection import signal_to_background
+from microburst_detection.signal_to_background import signal_to_background
 from microburst_detection import config
 
 class SignalToBackgroundLoop:
-    def __init__(self, sc_id, background_width_s, std_thresh, detect_channel=0):
+    def __init__(self, sc_id, microburst_width_s, background_width_s, std_thresh, detect_channel=0):
         """
         This program uses signal_to_background detection code to
         loop over all of the FIREBIRD data and detect all 
@@ -19,6 +19,8 @@ class SignalToBackgroundLoop:
         ----------
         sc_id : int
             Spacecraft id. Either 3 or 4
+        microburst_width_s: float
+            The microburst width to use for the running mean.
         background_width_s : float
             The baseline width in time to calculate the running mean
         std_thresh : float
@@ -29,12 +31,13 @@ class SignalToBackgroundLoop:
             critera. This is channel 0 by default.
         """
         self.sc_id = sc_id
+        self.microburst_width_s = microburst_width_s
         self.background_width_s = background_width_s
         self.std_thresh = std_thresh
         self.detect_channel = detect_channel
 
         # Find all of the HiRes files
-        search_str = f'FU{sc_id}_Hires_*.txt'
+        search_str = f'FU{sc_id}_Hires_*L2.txt'
         self.hr_paths = sorted(pathlib.Path(config.FB_DIR).rglob(search_str))
         return
 
@@ -66,17 +69,23 @@ class SignalToBackgroundLoop:
         for hr_path in progressbar.progressbar(self.hr_paths):
             hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
             hr['Time'] = pd.to_datetime(hr['Time'])
-            cadence = float(hr.attrs['CADENCE'])
-
+            try:
+                cadence = float(hr.attrs['CADENCE'])
+            except KeyError as err:
+                if 'CADENCE' in str(err):
+                    print(f'hr_path={hr_path}')
+                raise
+                
             # All of the code to detect microbursts is here.
             s = signal_to_background.FirebirdSignalToBackground(
                 hr['Col_counts'], cadence, 
+                self.microburst_width_s,
                 self.background_width_s
                 )
             s.significance()
             try:
                 s.find_microburst_peaks(std_thresh=self.std_thresh, 
-                                        detect_channel=detect_channel)
+                                        detect_channel=self.detect_channel)
             except ValueError as err:
                 if str(err) == 'No detections found':
                     continue
@@ -124,9 +133,10 @@ class SignalToBackgroundLoop:
 
 if __name__ == '__main__':
     sc_id = 4
-    background_width_s = 2
+    microburst_width_s = 0.1
+    background_width_s = 0.5
     std_thresh = 10
 
-    s = SignalToBackgroundLoop(sc_id, background_width_s, std_thresh)
+    s = SignalToBackgroundLoop(sc_id, microburst_width_s, background_width_s, std_thresh)
     s.loop()
     s.save_microbursts()
