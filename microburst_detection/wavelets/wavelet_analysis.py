@@ -190,7 +190,7 @@ class WaveletDetector():
         ax.fill_between(self.time, np.max(self.period), self.coi, alpha=0.8, 
             facecolor='white', zorder=3)
         im = ax.contourf(CS, levels=np.log2(self.levels))
-        ax.set_xlabel('UTC')
+        # ax.set_xlabel('UTC')
         ax.set_ylabel('Period [s]')
         # 95# significance contour, levels at -99 (fake) and 1 (95# signif)
         ax.contour(self.time, self.period, self.sig95, [-99, 1], colors='k')

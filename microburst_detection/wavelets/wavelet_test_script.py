@@ -13,6 +13,8 @@ import matplotlib.pylab as plt
 from microburst_detection.wavelets import wavelet_analysis
 from microburst_detection import config
 
+plt.rcParams.update({'font.size': 13})
+
 # Load example HiRes data
 sc_id = 4
 hr_date = datetime(2019, 9, 27) 
@@ -25,6 +27,8 @@ hr = spacepy.datamodel.readJSONheadedASCII(hr_path)
 
 # Convert time array
 hr['Time'] = pd.to_datetime(hr['Time'])
+cadence = float(hr.attrs['CADENCE'])
+cadence_int = int(cadence*1000)
 
 # Filter the data by time to reduce computational time.
 if True:
@@ -43,7 +47,7 @@ max_width = 1
 waveDet = wavelet_analysis.WaveletDetector(
     hr['Col_counts'][validInd, channel],
     hr['Time'][validInd], 
-    cadence=float(hr.attrs['CADENCE']), 
+    cadence=cadence, 
     siglvl=0.95, 
     run_scipt=False, 
     j1=40
@@ -68,26 +72,26 @@ ax[0].plot(hr['Time'][validInd[waveDet.peaks]],
             hr['Col_counts'][validInd[waveDet.peaks], channel], 
             'r*', ls='None', markersize=10, label='microburst peak')
 
-ax[1].plot(hr['Time'][validInd], 
+ax[2].plot(hr['Time'][validInd], 
             waveDet.dataFlt,
              'k')
-ax[1].axhline(count_thresh, ls='--')
+ax[2].axhline(count_thresh, ls='--')
 
-ax[0].set(ylabel='counts [counts/bin]', 
+ax[0].set(ylabel=f'original counts\n[counts/{cadence_int} ms]', 
         title=f'FIREBIRD unit {sc_id} | collimated detector | {hr_date.date()}')
-ax[1].set(ylabel='counts [counts/bin]')
-ax[2].set(xlabel='Time', ylabel='period [s]')
+ax[1].set(ylabel='period [s]')
+ax[2].set(ylabel=f'filtered counts\n[arbitrary units]', xlabel='Time')
 # ax[0].legend()
 
 # Plot wavelet power
-waveDet.plotPower(ax[-1])
-ax[-1].axhline(max_width, c='w', lw=1, ls='--')
-ax[-1].set_ylim(4, None)
+waveDet.plotPower(ax[1])
+ax[1].axhline(max_width, c='w', lw=1, ls='--')
+ax[1].set_ylim(4, None)
 # Hatch the periods outside the interval we care about
-ax[-1].fill_between(hr['Time'][validInd], max_width*np.ones_like(validInd), 10, facecolor="none", hatch="X", edgecolor="w", linewidth=0.0)
+ax[1].fill_between(hr['Time'][validInd], max_width*np.ones_like(validInd), 10, facecolor="none", hatch="X", edgecolor="w", linewidth=0.0)
 
-subplot_titles = ['original data', 'filtered data', 'wavelet power spectrum']
-subplot_text_y_pos = [1, 1, 0.1]
+subplot_titles = ['original data', 'wavelet power spectrum', 'filtered data']
+subplot_text_y_pos = [1, 0.1, 1]
 subplot_text_color=['k', 'k', 'k']
 for i, (ax_i, title_i, y_pos, c_i) in enumerate(zip(ax, subplot_titles, subplot_text_y_pos, subplot_text_color)):
     ax_i.text(0, y_pos, f'({string.ascii_lowercase[i]}) {title_i}', va='top',
