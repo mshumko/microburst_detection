@@ -10,7 +10,7 @@ import pathlib
 
 import spacepy.datamodel
 
-import microburst_detection.dirs
+from microburst_detection import config
 
 class Browser:
     def __init__(self, fb_id, 
@@ -38,7 +38,7 @@ class Browser:
         else:
             self.catalog_save_name = catalog_save_name
         self.catalog_save_path = pathlib.Path(
-            microburst_detection.dirs.project_dir, 
+            config.PROJECT_DIR, 
             'data',                     
             self.catalog_save_name)
 
@@ -64,7 +64,7 @@ class Browser:
         Load the catalog and convert the times
         """
         catalog_path = pathlib.Path(
-            microburst_detection.dirs.project_dir, 
+            config.PROJECT_DIR, 
             'data', catalog_name
             )
         self.catalog = pd.read_csv(catalog_path)
@@ -277,9 +277,20 @@ class Browser:
 
     def _load_hr(self, date):
         """ Loads FIREBIRD HiRes data and converts times """
-        hr_path = pathlib.Path(microburst_detection.dirs.firebird_dir(self.fb_id),
-                                f'FU{self.fb_id}_Hires_{date}_L2.txt')
-        self.hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
+
+        # search_str = f'FU{sc_id}*Hires*{hr_date.year}*{hr_date.month}*{hr_date.day}*L2*'
+        # hr_paths = list(pathlib.Path(config.FB_DIR, ).rglob(search_str))
+        # assert len(hr_paths) == 1, (f'A unique HiRes path not found.\n'
+        #                             f'hr_paths={hr_paths} search_str={search_str}')
+        # hr_path = str(hr_paths[0])
+        # hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
+
+        search_str = f'FU{self.fb_id}_Hires_{date}_L2.txt'
+        hr_paths = list(pathlib.Path(config.FB_DIR).rglob(search_str))
+        assert len(hr_paths) == 1, (f'A unique HiRes path not found.\n'
+                                    f'hr_paths={hr_paths} search_str={search_str}')
+        hr_path = str(hr_paths[0])
+        self.hr = spacepy.datamodel.readJSONheadedASCII(hr_path)
         self.hr['Time'] = pd.to_datetime(self.hr['Time'])
         #self.hr['Time'] = np.array([dateutil.parser.parse(t) for t in self.hr['Time']])
         self.cadence = 1000*float(self.hr.attrs['CADENCE'])

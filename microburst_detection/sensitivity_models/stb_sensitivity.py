@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import progressbar
 
-import microburst_detection.signal_to_background.signal_to_background as signal_to_background
+from microburst_detection.signal_to_background import signal_to_background
 import mc_model
 import mc_model_config
 
@@ -10,6 +10,7 @@ m = mc_model.ModelPeaks(mc_model_config) # Generate a bunch of time series.
 
 detected = np.ones(m.peak_widths.shape[0], dtype=bool)
 
+microburst_width_s = 0.1
 background_width_s = 0.5
 sig_thresh_std = 10
 bins = np.linspace(0, 3)
@@ -18,6 +19,7 @@ for i in progressbar.progressbar(range(m.counts.shape[1])):
     counts = m.counts[:, i]
     s = signal_to_background.SignalToBackground(
         counts, mc_model_config.cadence_s, 
+        microburst_width_s,
         background_width_s
     )
     s.significance()
