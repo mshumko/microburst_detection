@@ -28,8 +28,8 @@ hr['Time'] = pd.to_datetime(hr['Time'])
 
 # Filter the data by time to reduce computational time.
 if True:
-    startTime = datetime(2019, 9, 27, 18, 26, 30)
-    endTime = datetime(2019, 9, 27, 18, 29, 30)
+    startTime = datetime(2019, 9, 27, 19, 30, 30)
+    endTime = datetime(2019, 9, 27, 19, 31, 5)
     validInd = np.where((hr['Time'] > startTime) & (hr['Time'] < endTime))[0]
     assert len(validInd) > 0, "No data found in the time range specified!"
 else:
@@ -81,12 +81,17 @@ ax[2].set(xlabel='Time', ylabel='period [s]')
 
 # Plot wavelet power
 waveDet.plotPower(ax[-1])
-ax[-1].axhline(max_width, c='w', lw=3)
+ax[-1].axhline(max_width, c='w', lw=1, ls='--')
+ax[-1].set_ylim(4, None)
+# Hatch the periods outside the interval we care about
+ax[-1].fill_between(hr['Time'][validInd], max_width*np.ones_like(validInd), 10, facecolor="none", hatch="X", edgecolor="w", linewidth=0.0)
 
 subplot_titles = ['original data', 'filtered data', 'wavelet power spectrum']
-for i, (ax_i, title_i) in enumerate(zip(ax, subplot_titles)):
-    ax_i.text(0, 1, f'({string.ascii_lowercase[i]}) {title_i}', va='top',
-            transform=ax_i.transAxes, fontsize=15, weight='bold')
+subplot_text_y_pos = [1, 1, 0.1]
+subplot_text_color=['k', 'k', 'k']
+for i, (ax_i, title_i, y_pos, c_i) in enumerate(zip(ax, subplot_titles, subplot_text_y_pos, subplot_text_color)):
+    ax_i.text(0, y_pos, f'({string.ascii_lowercase[i]}) {title_i}', va='top',
+            transform=ax_i.transAxes, fontsize=15, weight='bold', c=c_i)
 
 plt.tight_layout()
 plt.show()

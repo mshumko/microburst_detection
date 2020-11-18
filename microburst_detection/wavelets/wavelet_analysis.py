@@ -74,7 +74,7 @@ class WaveletDetector():
         self.waveFlt = self.wave
         
         # Band pass filter
-        # Zero out parts of the wavlet space that we don't want to reconstruct. 
+        # Zero out parts of the wavelet space that we don't want to reconstruct. 
         self.waveFlt[upperScale:, :] = 0
         self.waveFlt[:lowerScale, :] = 0
     
