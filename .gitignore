@@ -1,8 +1,10 @@
 /__pycache__/*
 config.py
 env/
+microburst_detection.egg-info/
 
 *.npy
 *.png
 *.pdf
 *.pyc
+.vscode/settings.json
