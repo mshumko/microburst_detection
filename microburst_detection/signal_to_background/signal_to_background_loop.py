@@ -5,8 +5,8 @@ import progressbar
 
 import spacepy
 
-import signal_to_background
-import microburst_detection.dirs
+from microburst_detection import signal_to_background
+from microburst_detection import config
 
 class SignalToBackgroundLoop:
     def __init__(self, sc_id, background_width_s, std_thresh, detect_channel=0):
@@ -35,8 +35,7 @@ class SignalToBackgroundLoop:
 
         # Find all of the HiRes files
         search_str = f'FU{sc_id}_Hires_*.txt'
-        hr_dir = microburst_detection.dirs.firebird_dir(sc_id)
-        self.hr_paths = sorted(pathlib.Path(hr_dir).rglob(search_str))
+        self.hr_paths = sorted(pathlib.Path(config.FB_DIR).rglob(search_str))
         return
 
     def loop(self, save_keys='default'):

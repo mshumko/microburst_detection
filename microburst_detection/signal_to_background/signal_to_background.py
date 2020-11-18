@@ -1,11 +1,12 @@
-import pandas as pd
 import pathlib
-import matplotlib.pyplot as plt
-import numpy as np
+from datetime import datetime
 
 import spacepy
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
-from microburst_detection import dirs
+from microburst_detection import config
 from microburst_detection.misc.locate_consecutive_numbers import locateConsecutiveNumbers
 
 class SignalToBackground:
@@ -101,12 +102,12 @@ class SignalToBackground:
 
 
 class FirebirdSignalToBackground(SignalToBackground):
-    def __init__(self, counts, cadence, background_width_s):
+    def __init__(self, counts, cadence, background_width_s, microburst_width_s):
         """
         This child class of SignalToBackground finds peaks but reports
         the standard deviations for all 6 FIREBIRD channels.
         """
-        super().__init__(counts, cadence, background_width_s)
+        super().__init__(counts, cadence, background_width_s, microburst_width_s)
         return
 
     def significance(self):
@@ -156,18 +157,26 @@ class FirebirdSignalToBackground(SignalToBackground):
 
 
 if __name__ == '__main__':
-    hr_name = 'FU4_Hires_2019-09-27_L2.txt'
+    # Detection parameters
     background_width_s = 2
+    microburst_width_s = 0.1
     std_thresh = 10
-    sc_id = hr_name[2]
-    hr_path = pathlib.Path(dirs.firebird_dir(sc_id), hr_name)
 
+    # Load the HiRes data
+    sc_id = 4
+    hr_date = datetime(2019, 9, 27) 
+    search_str = f'FU{sc_id}*Hires*{hr_date.year}*{hr_date.month}*{hr_date.day}*L2*'
+    hr_paths = list(pathlib.Path(config.FB_DIR, ).rglob(search_str))
+    assert len(hr_paths) == 1, (f'A unique HiRes path not found.\n'
+                                f'hr_paths={hr_paths} search_str={search_str}')
+    hr_path = str(hr_paths[0])
     hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
     hr['Time'] = pd.to_datetime(hr['Time'])
     cadence = float(hr.attrs['CADENCE'])
 
     # All of the code to detect microbursts is here.
-    s = FirebirdSignalToBackground(hr['Col_counts'], cadence, background_width_s)
+    s = FirebirdSignalToBackground(hr['Col_counts'], cadence, 
+                                background_width_s, microburst_width_s)
     s.significance()
     s.find_microburst_peaks(std_thresh=std_thresh)
 
