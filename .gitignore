@@ -1,4 +1,7 @@
 /__pycache__/*
+config.py
+env/
+
 *.npy
 *.png
 *.pdf

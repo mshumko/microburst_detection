@@ -1,8 +1,13 @@
 # The code works with the following exact requirements.
 # (Not tested with other versions. Feel free to install
 # the dependencies yourself or change the "==" to ">=".)
-numpy==1.18.1
-pandas==1.0.3
-spacepy==0.2.1
-progressbar2==3.47.0
-scipy==1.4.1
+numpy>=1.18.1
+pandas>=1.0.3
+spacepy>=0.2.1
+progressbar2>=3.47.0
+scipy>=1.4.1
+
+# Finally install this package in editable (-e) 
+# mode so I can develop it 
+# without reinstalling it after every change.
+-e .
