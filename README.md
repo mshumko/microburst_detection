@@ -14,7 +14,14 @@ O'Brien et al., 2003; Douma et al., 2017; Shumko et al., 2020.
 Easiest method to install the numpy, pandas, progressbar, and spacepy 
 dependencies is with pip and the requirements.txt file. 
 
-Example: ```pip3 install -r requirements.txt```
+Install with: 
+```python3 -m pip install -r requirements.txt```
+
+And set the project and data paths generally with:
+```python3 -m microburst_detection init```
+
+Otherwise if you're a FIREBIRD user:
+```python3 -m microburst_detection firebird```
 
 # Example Uses:
 
@@ -48,32 +55,6 @@ Once you ran ```signal_to_background_loop.py``` and the catalog file is generate
 Upon exiting the browser the marked microbursts will be saved to where the original catalog was located, suffixed with "_sorted". If you open the browser again and the sorted catalog is populated, the browser will jump to the most recent microburst detection. Therefore you can stop and pick up your sorting from the last microburst detection.
 
 The last feature lets you jump to any microburst in the list by changing the index in the GUI's index box in the bottom right.
-
-#
-
-# Project Structure
-```
-├── data
-│   └── FU4_microbursts.csv - An example catalog. Feel free to rewrite
-├── example_plots 
-├── misc
-│   ├── locate_consecutive_numbers.py - Helper function to find continious intervals of peaked data and isolate individual microbursts.
-│   └── microburst_browser.py - A GUI to sort microburst detections.
-├── README.md
-├── dirs.py - The FIREBIRD and project directories 
-├── requirements.txt - List of dependency libraries
-├── sensitivity_models - Monte Carlo model to quantify the sensitivity of microburst detectors to microburst widths 
-│   ├── mc_model_config.py - MC model configuration
-│   ├── mc_model.py - The MC model that generates lots of gaussian time series with noise
-│   └── stb_sensitivity.py - Test the sensitivity of the signal to background method
-├── signal_to_background
-│   ├── signal_to_background_loop.py - Loop the detector over the FIREBIRD data and save to a csv file.
-│   └── signal_to_background.py - The main program to identify microbursts
-└── wavelets
-    ├── waveletAnalysis.py - A wrapper to find microbursts in the FIREBIRD data. Contains functions to transform and inverse wavelet transforms 
-    ├── waveletFunctions.py - Wavelet function code from https://paos.colorado.edu/research/wavelets/
-    └── wavelet_test_scipt.py - A script to visualize the microburst detections. Useful if you want to tweak parameters.
-```
 
 # Bibliography
 
