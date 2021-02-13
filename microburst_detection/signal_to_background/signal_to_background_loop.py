@@ -9,7 +9,8 @@ import signal_to_background
 import microburst_detection.config as config
 
 class SignalToBackgroundLoop:
-    def __init__(self, sc_id, background_width_s, std_thresh, detect_channel=0):
+    def __init__(self, sc_id, background_width_s, microburst_width_s, 
+                std_thresh, detect_channel=0):
         """
         This program uses signal_to_background detection code to
         loop over all of the FIREBIRD data and detect all 
@@ -30,6 +31,7 @@ class SignalToBackgroundLoop:
         """
         self.sc_id = sc_id
         self.background_width_s = background_width_s
+        self.microburst_width_s = microburst_width_s
         self.std_thresh = std_thresh
         self.detect_channel = detect_channel
 
@@ -71,7 +73,8 @@ class SignalToBackgroundLoop:
             # All of the code to detect microbursts is here.
             s = signal_to_background.FirebirdSignalToBackground(
                 hr['Col_counts'], cadence, 
-                self.background_width_s
+                self.background_width_s, 
+                self.microburst_width_s
                 )
             s.significance()
             try:
@@ -107,7 +110,7 @@ class SignalToBackgroundLoop:
         If the directory does not exist, one will be created.
         """
         save_dir = pathlib.Path(config.PROJECT_DIR, 'data')
-        
+
         if not save_dir.is_dir():
             save_dir.mkdir()
             print(f'Made directory at {save_dir}')
@@ -123,8 +126,9 @@ class SignalToBackgroundLoop:
 if __name__ == '__main__':
     sc_id = 4
     background_width_s = 2
+    microburst_width_s = 0.1
     std_thresh = 10
 
-    s = SignalToBackgroundLoop(sc_id, background_width_s, std_thresh)
+    s = SignalToBackgroundLoop(sc_id, background_width_s, microburst_width_s, std_thresh)
     s.loop()
     s.save_microbursts()

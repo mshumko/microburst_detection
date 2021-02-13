@@ -101,12 +101,12 @@ class SignalToBackground:
 
 
 class FirebirdSignalToBackground(SignalToBackground):
-    def __init__(self, counts, cadence, background_width_s):
+    def __init__(self, counts, cadence, background_width_s, microburst_width_s):
         """
         This child class of SignalToBackground finds peaks but reports
         the standard deviations for all 6 FIREBIRD channels.
         """
-        super().__init__(counts, cadence, background_width_s)
+        super().__init__(counts, cadence, background_width_s, microburst_width_s)
         return
 
     def significance(self):
