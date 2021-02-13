@@ -6,7 +6,7 @@ import progressbar
 import spacepy
 
 import signal_to_background
-import microburst_detection.dirs
+import microburst_detection.config as config
 
 class SignalToBackgroundLoop:
     def __init__(self, sc_id, background_width_s, std_thresh, detect_channel=0):
@@ -35,8 +35,7 @@ class SignalToBackgroundLoop:
 
         # Find all of the HiRes files
         search_str = f'FU{sc_id}_Hires_*.txt'
-        hr_dir = microburst_detection.dirs.firebird_dir(sc_id)
-        self.hr_paths = sorted(pathlib.Path(hr_dir).rglob(search_str))
+        self.hr_paths = sorted(config.FB_DIR.rglob(search_str))
         return
 
     def loop(self, save_keys='default'):
@@ -107,10 +106,8 @@ class SignalToBackgroundLoop:
         Save the microburst list to a csv file in the data/ directory.
         If the directory does not exist, one will be created.
         """
-        save_dir = pathlib.Path(
-            microburst_detection.dirs.project_dir,
-            'data'
-        )
+        save_dir = pathlib.Path(config.PROJECT_DIR, 'data')
+        
         if not save_dir.is_dir():
             save_dir.mkdir()
             print(f'Made directory at {save_dir}')
