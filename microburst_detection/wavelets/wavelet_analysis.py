@@ -1,12 +1,15 @@
-import numpy as np
-import pandas as pd
-from waveletFunctions import wavelet, wave_signif
-import matplotlib.pylab as plt
-import matplotlib
 import math as m
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import datetime
 import operator
+
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import numpy as np
+import pandas as pd
+import matplotlib.pylab as plt
+import matplotlib
+
+from .wavelet_functions import wavelet, wave_signif
+
 
 class WaveletDetector():
     def __init__(self, data, time, cadence, **kwargs):
@@ -71,7 +74,7 @@ class WaveletDetector():
         self.waveFlt = self.wave
         
         # Band pass filter
-        # Zero out parts of the wavlet space that we don't want to reconstruct. 
+        # Zero out parts of the wavelet space that we don't want to reconstruct. 
         self.waveFlt[upperScale:, :] = 0
         self.waveFlt[:lowerScale, :] = 0
     
@@ -201,9 +204,9 @@ class WaveletDetector():
         ax.ticklabel_format(axis='y', style='plain')
         ax.invert_yaxis()
         # set up the size and location of the colorbar
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("bottom", size="5%", pad=0.5)
-        plt.colorbar(im, cax=cax, orientation='horizontal')
+        # divider = make_axes_locatable(ax)
+        # cax = divider.append_axes("bottom", size="5%", pad=0.5)
+        # plt.colorbar(im, cax=cax, orientation='horizontal')
         #######################################
 
     def lagNAutoCorr(self, x, n):

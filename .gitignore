@@ -7,3 +7,4 @@ microburst_detection.egg-info/
 *.png
 *.pdf
 *.pyc
+.vscode/settings.json
