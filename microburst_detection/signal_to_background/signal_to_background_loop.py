@@ -67,15 +67,19 @@ class SignalToBackgroundLoop:
                 (0, len(save_keys)), dtype=object
                 )
 
-        for hr_path in progressbar.progressbar(self.hr_paths):
+        for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
             hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
+            print(f'file_name={hr_path}, L-shell_keys={[key for key in hr.keys() if "wainL" in key]}')
             hr['Time'] = pd.to_datetime(hr['Time'])
             try:
                 cadence = float(hr.attrs['CADENCE'])
             except KeyError as err:
                 if 'CADENCE' in str(err):
                     print(f'hr_path={hr_path}')
-                raise
+                    cadence = input(f'What is the FU{self.sc_id} cadence for {hr_path.name}?')
+                    cadence = float(cadence)
+                else:
+                    raise
                 
             # All of the code to detect microbursts is here.
             s = signal_to_background.FirebirdSignalToBackground(
