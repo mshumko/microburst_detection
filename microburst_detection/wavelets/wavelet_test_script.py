@@ -80,7 +80,7 @@ ax[2].axhline(count_thresh, ls='--')
 ax[0].set(ylabel=f'original counts\n[counts/{cadence_int} ms]', 
         title=f'FIREBIRD unit {sc_id} | collimated detector | {hr_date.date()}')
 ax[1].set(ylabel='period [s]')
-ax[2].set(ylabel=f'filtered counts\n[arbitrary units]', xlabel='Time')
+ax[2].set(ylabel=f'filtered counts', xlabel='Time')
 # ax[0].legend()
 
 # Plot wavelet power
