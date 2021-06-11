@@ -33,6 +33,7 @@ class SignalToBackgroundLoop:
         self.sc_id = sc_id
         self.microburst_width_s = microburst_width_s
         self.background_width_s = background_width_s
+        self.microburst_width_s = microburst_width_s
         self.std_thresh = std_thresh
         self.detect_channel = detect_channel
 
@@ -66,21 +67,25 @@ class SignalToBackgroundLoop:
                 (0, len(save_keys)), dtype=object
                 )
 
-        for hr_path in progressbar.progressbar(self.hr_paths):
+        for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
             hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
+            print(f'file_name={hr_path}, L-shell_keys={[key for key in hr.keys() if "wainL" in key]}')
             hr['Time'] = pd.to_datetime(hr['Time'])
             try:
                 cadence = float(hr.attrs['CADENCE'])
             except KeyError as err:
                 if 'CADENCE' in str(err):
                     print(f'hr_path={hr_path}')
-                raise
+                    cadence = input(f'What is the FU{self.sc_id} cadence for {hr_path.name}?')
+                    cadence = float(cadence)
+                else:
+                    raise
                 
             # All of the code to detect microbursts is here.
             s = signal_to_background.FirebirdSignalToBackground(
                 hr['Col_counts'], cadence, 
-                self.microburst_width_s,
-                self.background_width_s
+                self.background_width_s, 
+                self.microburst_width_s
                 )
             s.significance()
             try:
@@ -115,10 +120,8 @@ class SignalToBackgroundLoop:
         Save the microburst list to a csv file in the data/ directory.
         If the directory does not exist, one will be created.
         """
-        save_dir = pathlib.Path(
-            microburst_detection.dirs.project_dir,
-            'data'
-        )
+        save_dir = pathlib.Path(config.PROJECT_DIR, 'data')
+
         if not save_dir.is_dir():
             save_dir.mkdir()
             print(f'Made directory at {save_dir}')
