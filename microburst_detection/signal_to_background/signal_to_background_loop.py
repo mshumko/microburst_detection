@@ -56,28 +56,20 @@ class SignalToBackgroundLoop:
         for the 6 energy channels will be saved as well.
         """
         if save_keys == 'default':
-            save_keys = (['Time', 'Lat', 'Lon', 'Alt', 
-                        'McIlwainL', 'MLT', 'kp'] + 
-                        [f'counts_s_{i}' for i in range(6)] +
-                        [f'sig_{i}' for i in range(6)] +
-                        ['saturated']
-                        )
-        # hr_keys only has the keys that are in the HiRes data.
-        hr_keys = [
-            col for col in save_keys 
-            if (('sig' not in col) or 
-            ('counts' not in col) or 
-            ('saturated' not in col))
-            ]
+            self.hr_keys = ['Time', 'Lat', 'Lon', 'Alt', 
+                            'McIlwainL', 'MLT', 'kp']
+            self.count_keys = [f'counts_s_{i}' for i in range(6)]
+            self.sig_keys = [f'sig_{i}' for i in range(6)]
+            self.save_keys = self.hr_keys + self.count_keys + self.sig_keys + ['saturated']
         
-        #self.microburst_list = pd.DataFrame(columns=save_keys)
-        self.microburst_list = np.nan*np.ones(
-                (0, len(save_keys)), dtype=object
-                )
+        self.microburst_list = pd.DataFrame(columns=self.save_keys)
+        # self.microburst_list = np.nan*np.ones(
+        #         (0, len(self.save_keys)), dtype=object
+        #         )
 
         for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
             hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
-            print(f'file_name={hr_path}, L-shell_keys={[key for key in hr.keys() if "wainL" in key]}')
+            # print(f'file_name={hr_path}, L-shell_keys={[key for key in hr.keys() if "wainL" in key]}')
             hr['Time'] = pd.to_datetime(hr['Time'])
             try:
                 cadence = float(hr.attrs['CADENCE'])
@@ -104,25 +96,21 @@ class SignalToBackgroundLoop:
                     continue
                 else:
                     raise
-
-            daily_detections = np.nan*np.ones(
-                (len(s.peak_idt), len(save_keys)), dtype=object
+                
+            daily_detections = pd.DataFrame(
+                data=np.nan*np.ones((len(s.peak_idt), len(self.save_keys)), dtype=object), 
+                columns=self.save_keys
                 )
-            sig_idx = 
-            # Loop over each microburst detection and append to 
-            # the daily list
-            for i, peak_i in enumerate(s.peak_idt):
-                # Save certain HiRes heys
-                #print(s.n_std.shape)
-                # TODO: Change how the columns are indexed here.
-                daily_detections[i, :len(hr_keys)] = [hr[col][peak_i] for col in hr_keys] 
-                # Save the significance above baseline values for all channels.
-                daily_detections[i, len(hr_keys):] = s.n_std.loc[peak_i, :]
+            daily_detections.loc[:, self.hr_keys] = np.array([hr[col][s.peak_idt] for col in self.hr_keys]).T
+            daily_detections.loc[:, self.count_keys] = hr['Col_counts'][s.peak_idt, :]
+            daily_detections.loc[:, self.sig_keys] = s.n_std.loc[s.peak_idt, :].to_numpy()
                                             
-            self.microburst_list = np.concatenate((self.microburst_list, daily_detections))
+            self.microburst_list = pd.concat((self.microburst_list, daily_detections))
+            
 
-        self.microburst_list = pd.DataFrame(data=self.microburst_list, 
-                                            columns=save_keys)
+        # self.microburst_list = pd.DataFrame(data=self.microburst_list, 
+        #                                     columns=save_keys)
+        self.microburst_list = self.microburst_list.reset_index()
         return
 
     def save_microbursts(self, save_name=None):
