@@ -107,11 +107,8 @@ class SignalToBackgroundLoop:
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_detections))
             
-
-        # self.microburst_list = pd.DataFrame(data=self.microburst_list, 
-        #                                     columns=save_keys)
         self.microburst_list = self.microburst_list.reset_index()
-        return
+        return self.microburst_list
 
     def save_microbursts(self, save_name=None):
         """
