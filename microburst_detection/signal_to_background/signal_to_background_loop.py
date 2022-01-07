@@ -58,9 +58,17 @@ class SignalToBackgroundLoop:
         if save_keys == 'default':
             save_keys = (['Time', 'Lat', 'Lon', 'Alt', 
                         'McIlwainL', 'MLT', 'kp'] + 
-                        [f'sig{i}' for i in range(6)])
+                        [f'counts_s_{i}' for i in range(6)] +
+                        [f'sig_{i}' for i in range(6)] +
+                        ['saturated']
+                        )
         # hr_keys only has the keys that are in the HiRes data.
-        hr_keys = [col for col in save_keys if 'sig' not in col]
+        hr_keys = [
+            col for col in save_keys 
+            if (('sig' not in col) or 
+            ('counts' not in col) or 
+            ('saturated' not in col))
+            ]
         
         #self.microburst_list = pd.DataFrame(columns=save_keys)
         self.microburst_list = np.nan*np.ones(
@@ -100,11 +108,13 @@ class SignalToBackgroundLoop:
             daily_detections = np.nan*np.ones(
                 (len(s.peak_idt), len(save_keys)), dtype=object
                 )
+            sig_idx = 
             # Loop over each microburst detection and append to 
             # the daily list
             for i, peak_i in enumerate(s.peak_idt):
                 # Save certain HiRes heys
                 #print(s.n_std.shape)
+                # TODO: Change how the columns are indexed here.
                 daily_detections[i, :len(hr_keys)] = [hr[col][peak_i] for col in hr_keys] 
                 # Save the significance above baseline values for all channels.
                 daily_detections[i, len(hr_keys):] = s.n_std.loc[peak_i, :]
