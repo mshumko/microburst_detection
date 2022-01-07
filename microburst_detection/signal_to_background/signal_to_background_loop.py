@@ -101,13 +101,17 @@ class SignalToBackgroundLoop:
                 data=np.nan*np.ones((len(s.peak_idt), len(self.save_keys)), dtype=object), 
                 columns=self.save_keys
                 )
-            daily_detections.loc[:, self.hr_keys] = np.array([hr[col][s.peak_idt] for col in self.hr_keys]).T
+            daily_detections.loc[:, self.hr_keys] = np.array(
+                [hr[col][s.peak_idt] for col in self.hr_keys],
+                dtype=object
+                ).T
             daily_detections.loc[:, self.count_keys] = hr['Col_counts'][s.peak_idt, :]
             daily_detections.loc[:, self.sig_keys] = s.n_std.loc[s.peak_idt, :].to_numpy()
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_detections))
             
         self.microburst_list = self.microburst_list.reset_index()
+        del(self.microburst_list['index'])
         return self.microburst_list
 
     def save_microbursts(self, save_name=None):
