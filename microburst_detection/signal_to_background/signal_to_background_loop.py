@@ -47,7 +47,8 @@ class SignalToBackgroundLoop:
                             'McIlwainL', 'MLT', 'kp']
             self.count_keys = [f'counts_s_{i}' for i in range(6)]
             self.sig_keys = [f'sig_{i}' for i in range(6)]
-            self.catalog_columns = self.hr_keys + self.count_keys + self.sig_keys + ['saturated']
+            self.catalog_columns = (self.hr_keys + self.count_keys + 
+                self.sig_keys + ['time_gap', 'saturated'])
         else:
             self.catalog_columns = catalog_columns
 
@@ -86,18 +87,17 @@ class SignalToBackgroundLoop:
                 else:
                     raise
 
-            valid_peaks = self._time_gaps()
-
             daily_microburst_list = pd.DataFrame(
-                data=np.nan*np.ones((len(valid_peaks), len(self.catalog_columns)), dtype=object), 
+                data=np.nan*np.ones((len(self.s.peak_idt), len(self.catalog_columns)), dtype=object), 
                 columns=self.catalog_columns
                 )
             daily_microburst_list.loc[:, self.hr_keys] = np.array(
-                [self.hr[col][valid_peaks] for col in self.hr_keys],
+                [self.hr[col][self.s.peak_idt] for col in self.hr_keys],
                 dtype=object
                 ).T
-            daily_microburst_list.loc[:, self.count_keys] = self.hr['Col_counts'][valid_peaks, :]/self.cadence
-            daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[valid_peaks, :].to_numpy()
+            daily_microburst_list.loc[:, self.count_keys] = self.hr['Col_counts'][self.s.peak_idt, :]/self.cadence
+            daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[self.s.peak_idt, :].to_numpy()
+            daily_microburst_list.loc[:, 'time_gap'] = self._time_gaps()
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
             
@@ -138,17 +138,20 @@ class SignalToBackgroundLoop:
         """
         if width_s is None:
             width_s = 10
-        width_dp = width_s//(self.cadence*2)
+        width_dp = int(width_s/(self.cadence*2))
         if max_time_gap is None:
-            max_time_gap = 10*self.cadence
+            max_time_gap = 5*self.cadence
 
-        valid_peaks = np.array([])
-        for peak_idt in self.s.peak_idt:
+        near_gap = np.ones_like(self.s.peak_idt)  # Default to all near a time gap.
+        for i, peak_idt in enumerate(self.s.peak_idt):
+            # A time gap if the detection was made in the very begining or end of the day.
+            if (peak_idt-width_dp < 0) or (peak_idt+width_dp >= len(self.hr['Time'])):
+                continue
             filtered_times = self.hr['Time'][peak_idt-width_dp:peak_idt+width_dp]
             dt = np.array([(tf-ti).total_seconds() for tf, ti in zip(filtered_times[1:], filtered_times[:-1])])[0]
             if np.max(dt) < max_time_gap:
-                valid_peaks = np.append(valid_peaks, peak_idt)
-        return valid_peaks
+                near_gap[i] = 0
+        return near_gap
    
 
 if __name__ == '__main__':
