@@ -68,11 +68,11 @@ class SignalToBackgroundLoop:
         for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
             hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
             hr['Time'] = pd.to_datetime(hr['Time'])
-            cadence = float(hr.attrs['CADENCE'])
+            self.cadence = float(hr.attrs['CADENCE'])
                 
             # All of the code to detect microbursts is here.
             s = signal_to_background.FirebirdSignalToBackground(
-                hr['Col_counts'], cadence, 
+                hr['Col_counts'], self.cadence, 
                 self.background_width_s, 
                 self.microburst_width_s
                 )
@@ -94,7 +94,7 @@ class SignalToBackgroundLoop:
                 [hr[col][s.peak_idt] for col in self.hr_keys],
                 dtype=object
                 ).T
-            daily_microburst_list.loc[:, self.count_keys] = hr['Col_counts'][s.peak_idt, :]/cadence
+            daily_microburst_list.loc[:, self.count_keys] = hr['Col_counts'][s.peak_idt, :]/self.cadence
             daily_microburst_list.loc[:, self.sig_keys] = s.n_std.loc[s.peak_idt, :].to_numpy()
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
@@ -120,6 +120,24 @@ class SignalToBackgroundLoop:
         self.microburst_list.to_csv(pathlib.Path(save_dir, save_name), 
                                     index=False)
         return
+
+    def _time_gaps(self, width_s=None, max_time_gap=None):
+        """
+        For each microburst, check if the time stamps within 
+        int(width_s/self.cadence) data points have a time 
+        difference less than time_gap. 
+
+        width_s: int
+            Used to calculate the time window around each microburst.
+            10 seconds if None.
+        max_time_gap: float
+            The maximum time difference between time stamps within the
+            window_s to keep the microburst. 10*self.cadence if None. 
+        """
+
+
+        return
+
             
 
 if __name__ == '__main__':
