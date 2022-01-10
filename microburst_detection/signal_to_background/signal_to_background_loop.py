@@ -63,7 +63,7 @@ class SignalToBackgroundLoop:
         save a handful of columns specified by the save_keys kwarg to
         self.microburst_list.
         """        
-        self.microburst_list = pd.DataFrame(columns=self.save_keys)
+        self.microburst_list = pd.DataFrame(columns=self.catalog_columns)
 
         for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
             hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
