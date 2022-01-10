@@ -85,17 +85,19 @@ class SignalToBackgroundLoop:
                     continue
                 else:
                     raise
-                
+
+            valid_peaks = self._time_gaps()
+
             daily_microburst_list = pd.DataFrame(
-                data=np.nan*np.ones((len(self.s.peak_idt), len(self.catalog_columns)), dtype=object), 
+                data=np.nan*np.ones((len(valid_peaks), len(self.catalog_columns)), dtype=object), 
                 columns=self.catalog_columns
                 )
             daily_microburst_list.loc[:, self.hr_keys] = np.array(
-                [self.hr[col][s.peak_idt] for col in self.hr_keys],
+                [self.hr[col][valid_peaks] for col in self.hr_keys],
                 dtype=object
                 ).T
-            daily_microburst_list.loc[:, self.count_keys] = self.hr['Col_counts'][self.s.peak_idt, :]/self.cadence
-            daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[self.s.peak_idt, :].to_numpy()
+            daily_microburst_list.loc[:, self.count_keys] = self.hr['Col_counts'][valid_peaks, :]/self.cadence
+            daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[valid_peaks, :].to_numpy()
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
             
@@ -136,14 +138,18 @@ class SignalToBackgroundLoop:
         """
         if width_s is None:
             width_s = 10
+        width_dp = width_s//(self.cadence*2)
         if max_time_gap is None:
             max_time_gap = 10*self.cadence
 
-        s.peak_idt
-
-        return
-
-            
+        valid_peaks = np.array([])
+        for peak_idt in self.s.peak_idt:
+            filtered_times = self.hr['Time'][peak_idt-width_dp:peak_idt+width_dp]
+            dt = np.array([(tf-ti).total_seconds() for tf, ti in zip(filtered_times[1:], filtered_times[:-1])])[0]
+            if np.max(dt) < max_time_gap:
+                valid_peaks = np.append(valid_peaks, peak_idt)
+        return valid_peaks
+   
 
 if __name__ == '__main__':
     sc_id = 4
