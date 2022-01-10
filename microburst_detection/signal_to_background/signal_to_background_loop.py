@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pathlib
 import progressbar
+import matplotlib.pyplot as plt
 
 import spacepy
 
@@ -57,7 +58,7 @@ class SignalToBackgroundLoop:
         self.hr_paths = sorted(pathlib.Path(config.FB_DIR).rglob(search_str))
         return
 
-    def loop(self):
+    def loop(self, test_plots=True):
         """
         Loop over all the HiRes data and run the signal_to_background
         microburst detector on every day. For the detected microbursts
@@ -86,7 +87,8 @@ class SignalToBackgroundLoop:
                     continue
                 else:
                     raise
-
+            
+            dropout = self._dropout()
             daily_microburst_list = pd.DataFrame(
                 data=np.nan*np.ones((len(self.s.peak_idt), len(self.catalog_columns)), dtype=object), 
                 columns=self.catalog_columns
@@ -98,8 +100,26 @@ class SignalToBackgroundLoop:
             daily_microburst_list.loc[:, self.count_keys] = self.hr['Col_counts'][self.s.peak_idt, :]/self.cadence
             daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[self.s.peak_idt, :].to_numpy()
             daily_microburst_list.loc[:, 'time_gap'] = self._time_gaps()
+            daily_microburst_list.loc[:, 'dropout'] = dropout[self.s.peak_idt]
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
+
+            if test_plots:
+                fig, ax = plt.subplots(2, sharex=True)
+                ax[0].plot(self.hr['Time'], self.hr['Col_counts'][:, self.detect_channel], c='k')
+                ax[0].scatter(
+                    self.hr['Time'][self.s.peak_idt], 
+                    self.hr['Col_counts'][self.s.peak_idt, self.detect_channel],
+                    marker='X', s=100, c='r', alpha=dropout[self.s.peak_idt]
+                    )
+                ax[0].scatter(
+                    self.hr['Time'][self.s.peak_idt], 
+                    self.hr['Col_counts'][self.s.peak_idt, self.detect_channel],
+                    marker='*', s=200, c='r', alpha=1-dropout[self.s.peak_idt]
+                    )
+                ax[1].plot(self.hr['Time'], dropout)
+                # ax[1].plot(self.hr['Time'], dropout)
+                plt.show()
             
         self.microburst_list = self.microburst_list.reset_index()
         del(self.microburst_list['index'])  # Duplicate
@@ -163,8 +183,17 @@ class SignalToBackgroundLoop:
         quarantine_dp: int
             How many data points around the dropout to flag as affected by the dropout.
         """
+        counts = self.hr['Col_counts'][:, self.detect_channel]
+        # Techincally there is a division here, but we can ignore it since were working in count space.
+        dc_dt = counts[1:] - counts[:-1]
+        dropouts = np.zeros_like(counts)
 
-        return
+        for i, dc_dt_i in enumerate(dc_dt):
+            if np.abs(dc_dt_i) > derivative_thresh:
+                start_index = max(0, i-quarantine_dp)
+                end_index = min(i+quarantine_dp, len(dropouts)-1)
+                dropouts[start_index:end_index] = 1
+        return dropouts
    
 
 if __name__ == '__main__':
