@@ -109,7 +109,7 @@ class SignalToBackgroundLoop:
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
             
         self.microburst_list = self.microburst_list.reset_index()
-        del(self.microburst_list['index'])
+        del(self.microburst_list['index'])  # Duplicate
         return self.microburst_list
 
     def save_microbursts(self, save_name=None):
