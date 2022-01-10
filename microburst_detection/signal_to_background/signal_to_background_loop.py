@@ -152,6 +152,19 @@ class SignalToBackgroundLoop:
             if np.max(dt) < max_time_gap:
                 near_gap[i] = 0
         return near_gap
+
+    def _dropout(self, derivative_thresh=200, quarantine_dp=20):
+        """
+        Identify dropouts in the FIREBIRD data using the derivative approach.
+
+        derivative_thresh: float
+            How much the counts need to change by (increase or decrease) over one data
+            point.
+        quarantine_dp: int
+            How many data points around the dropout to flag as affected by the dropout.
+        """
+
+        return
    
 
 if __name__ == '__main__':

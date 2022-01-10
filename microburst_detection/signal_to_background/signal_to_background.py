@@ -139,7 +139,7 @@ class FirebirdSignalToBackground(SignalToBackground):
         interval_start, interval_end = locateConsecutiveNumbers(self.criteria_idt)
         self.peak_idt = np.nan*np.ones(interval_start.shape[0])
 
-        # Loop over each continous interval and find the peak index.
+        # Loop over each continuos interval and find the peak index.
         for i, (start, end) in enumerate(zip(interval_start, interval_end)):
             if start == end:
                 end+=1
