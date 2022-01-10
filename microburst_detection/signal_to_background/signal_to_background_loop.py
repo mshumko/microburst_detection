@@ -9,7 +9,8 @@ from microburst_detection.signal_to_background import signal_to_background
 from microburst_detection import config
 
 class SignalToBackgroundLoop:
-    def __init__(self, sc_id, microburst_width_s, background_width_s, std_thresh, detect_channel=0):
+    def __init__(self, sc_id, microburst_width_s, background_width_s, std_thresh, 
+        detect_channel=0, catalog_columns=None):
         """
         This program uses signal_to_background detection code to
         loop over all of the FIREBIRD data and detect all 
@@ -26,9 +27,13 @@ class SignalToBackgroundLoop:
         std_thresh : float
             The baseline standard deviation threshold above the baseline
             that the data point must be to satisfy the microburst criteria
-        detect_channel : int, optional
+        detect_channel : int
             The FIREBIRD energy channel number to use for std_thresh 
             critera. This is channel 0 by default.
+        catalog_columns : list
+            What catalog to save in the catalog. If None, the keys are a 
+            combination of HiRes keys, collimated count keys, 
+            signal-to-backround keys, and a saturated key.
         """
         self.sc_id = sc_id
         self.microburst_width_s = microburst_width_s
@@ -37,35 +42,28 @@ class SignalToBackgroundLoop:
         self.std_thresh = std_thresh
         self.detect_channel = detect_channel
 
+        if catalog_columns is None:
+            self.hr_keys = ['Time', 'Lat', 'Lon', 'Alt', 
+                            'McIlwainL', 'MLT', 'kp']
+            self.count_keys = [f'counts_s_{i}' for i in range(6)]
+            self.sig_keys = [f'sig_{i}' for i in range(6)]
+            self.catalog_columns = self.hr_keys + self.count_keys + self.sig_keys + ['saturated']
+        else:
+            self.catalog_columns = catalog_columns
+
         # Find all of the HiRes files
         search_str = f'FU{sc_id}_Hires_*L2.txt'
         self.hr_paths = sorted(pathlib.Path(config.FB_DIR).rglob(search_str))
         return
 
-    def loop(self, save_keys='default'):
+    def loop(self):
         """
         Loop over all the HiRes data and run the signal_to_background
         microburst detector on every day. For the detected microbursts
         save a handful of columns specified by the save_keys kwarg to
         self.microburst_list.
-
-        If save_keys='default', a default set of keys will be used
-        including time, the spatial, and geomagnetic coordinates. These 
-        keys must be in the HiRes data. Furthermore if you're running
-        this on the FIREBIRD data, the baseline standard deviation values
-        for the 6 energy channels will be saved as well.
-        """
-        if save_keys == 'default':
-            self.hr_keys = ['Time', 'Lat', 'Lon', 'Alt', 
-                            'McIlwainL', 'MLT', 'kp']
-            self.count_keys = [f'counts_s_{i}' for i in range(6)]
-            self.sig_keys = [f'sig_{i}' for i in range(6)]
-            self.save_keys = self.hr_keys + self.count_keys + self.sig_keys + ['saturated']
-        
+        """        
         self.microburst_list = pd.DataFrame(columns=self.save_keys)
-        # self.microburst_list = np.nan*np.ones(
-        #         (0, len(self.save_keys)), dtype=object
-        #         )
 
         for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
             hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
@@ -97,18 +95,18 @@ class SignalToBackgroundLoop:
                 else:
                     raise
                 
-            daily_detections = pd.DataFrame(
-                data=np.nan*np.ones((len(s.peak_idt), len(self.save_keys)), dtype=object), 
-                columns=self.save_keys
+            daily_microburst_list = pd.DataFrame(
+                data=np.nan*np.ones((len(s.peak_idt), len(self.catalog_columns)), dtype=object), 
+                columns=self.catalog_columns
                 )
-            daily_detections.loc[:, self.hr_keys] = np.array(
+            daily_microburst_list.loc[:, self.hr_keys] = np.array(
                 [hr[col][s.peak_idt] for col in self.hr_keys],
                 dtype=object
                 ).T
-            daily_detections.loc[:, self.count_keys] = hr['Col_counts'][s.peak_idt, :]
-            daily_detections.loc[:, self.sig_keys] = s.n_std.loc[s.peak_idt, :].to_numpy()
+            daily_microburst_list.loc[:, self.count_keys] = hr['Col_counts'][s.peak_idt, :]
+            daily_microburst_list.loc[:, self.sig_keys] = s.n_std.loc[s.peak_idt, :].to_numpy()
                                             
-            self.microburst_list = pd.concat((self.microburst_list, daily_detections))
+            self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
             
         self.microburst_list = self.microburst_list.reset_index()
         del(self.microburst_list['index'])
