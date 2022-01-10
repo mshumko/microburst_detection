@@ -66,19 +66,19 @@ class SignalToBackgroundLoop:
         self.microburst_list = pd.DataFrame(columns=self.catalog_columns)
 
         for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
-            hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
-            hr['Time'] = pd.to_datetime(hr['Time'])
-            self.cadence = float(hr.attrs['CADENCE'])
+            self.hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
+            self.hr['Time'] = pd.to_datetime(self.hr['Time'])
+            self.cadence = float(self.hr.attrs['CADENCE'])
                 
             # All of the code to detect microbursts is here.
-            s = signal_to_background.FirebirdSignalToBackground(
-                hr['Col_counts'], self.cadence, 
+            self.s = signal_to_background.FirebirdSignalToBackground(
+                self.hr['Col_counts'], self.cadence, 
                 self.background_width_s, 
                 self.microburst_width_s
                 )
-            s.significance()
+            self.s.significance()
             try:
-                s.find_microburst_peaks(std_thresh=self.std_thresh, 
+                self.s.find_microburst_peaks(std_thresh=self.std_thresh, 
                                         detect_channel=self.detect_channel)
             except ValueError as err:
                 if str(err) == 'No detections found':
@@ -87,15 +87,15 @@ class SignalToBackgroundLoop:
                     raise
                 
             daily_microburst_list = pd.DataFrame(
-                data=np.nan*np.ones((len(s.peak_idt), len(self.catalog_columns)), dtype=object), 
+                data=np.nan*np.ones((len(self.s.peak_idt), len(self.catalog_columns)), dtype=object), 
                 columns=self.catalog_columns
                 )
             daily_microburst_list.loc[:, self.hr_keys] = np.array(
-                [hr[col][s.peak_idt] for col in self.hr_keys],
+                [self.hr[col][s.peak_idt] for col in self.hr_keys],
                 dtype=object
                 ).T
-            daily_microburst_list.loc[:, self.count_keys] = hr['Col_counts'][s.peak_idt, :]/self.cadence
-            daily_microburst_list.loc[:, self.sig_keys] = s.n_std.loc[s.peak_idt, :].to_numpy()
+            daily_microburst_list.loc[:, self.count_keys] = self.hr['Col_counts'][self.s.peak_idt, :]/self.cadence
+            daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[self.s.peak_idt, :].to_numpy()
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
             
@@ -134,7 +134,12 @@ class SignalToBackgroundLoop:
             The maximum time difference between time stamps within the
             window_s to keep the microburst. 10*self.cadence if None. 
         """
+        if width_s is None:
+            width_s = 10
+        if max_time_gap is None:
+            max_time_gap = 10*self.cadence
 
+        s.peak_idt
 
         return
 
