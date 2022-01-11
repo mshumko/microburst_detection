@@ -1,6 +1,6 @@
 # Validates the microburst catalogs.
 import pathlib
-from datetime import datetime
+from datetime import date
 
 
 import progressbar
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from signal_to_background import config
 
-plot_window_s = 20
+plot_window_s = 10
 sc_id = 4
 catalog_name = 'FU4_microburst_catalog_00.csv'
 catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
@@ -36,13 +36,13 @@ def load_hr(date):
     hr['Time'] = pd.to_datetime(hr['Time'])
     return hr
 
-current_date = datetime.min
+current_date = date.min
 
 for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]):
-    if current_date.date() != index.date():
+    if current_date != index.date():
         hr = load_hr(index)
         current_date = index.date()
-    dt = pd.Timedelta(second=plot_window_s/2)
+    dt = pd.Timedelta(seconds=plot_window_s/2)
     time_range = (index-dt, index+dt)
 
     _, ax = plt.subplots()
@@ -53,15 +53,15 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
         )[0]
     idt_peak = np.where(hr['Time'] == index)[0]
     ax.plot(hr['Time'][idt], hr['Col_counts'][idt, 0], c='k')
-    ax.scatter(hr['Time'][idt_peak], hr['Col_counts'][idt_peak, 0], m='*', s=200, c='r')
+    ax.scatter(hr['Time'][idt_peak], hr['Col_counts'][idt_peak, 0], marker='*', s=200, c='r')
 
     ax.set(
         xlim=time_range, xlabel='Time', 
         ylabel=f'Counts/{float(hr.attrs["CADENCE"])}',
         title=index.strftime("%Y-%m-%d %H:%M:%S microburst validation")
         )
-    ax.text(0.8, 1, f'time_gap={row["time_gap"]}\nsaturation={row["saturation"]}', 
-        va='top', transform=ax.transAxis)
+    ax.text(0.8, 1, f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}', 
+        va='top', transform=ax.transAxes)
 
     plt.tight_layout()
     save_name = index.strftime("%Y%m%d_%H%M%S_microburst.png")
