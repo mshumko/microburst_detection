@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pathlib
+import subprocess
 import progressbar
 import matplotlib.pyplot as plt
 
@@ -137,10 +138,45 @@ class SignalToBackgroundLoop:
             print(f'Made directory at {save_dir}')
 
         if save_name is None:
-            save_name = f'FU{self.sc_id}_microbursts.csv'
+            counter = 0
+            while True:
+                save_name = f'FU{self.sc_id}_microburst_catalog_{counter:02d}.csv'.format(counter)
+                save_path = pathlib.Path(save_dir, save_name)
+                if not save_path.exists():
+                    break
+                counter += 1
+        else:
+            save_path = pathlib.Path(save_dir, save_name)
 
-        self.microburst_list.to_csv(pathlib.Path(save_dir, save_name), 
-                                    index=False)
+        self.microburst_list.to_csv(save_path, index=False)
+        self._save_log(save_path)
+        return
+
+    def _save_log(self, save_path):
+        """
+        Save the catalog log
+        """
+        log_path = pathlib.Path(save_path.parents[0], 'catalog_log.csv')
+
+        # Log the saved catalog info.
+        git_revision_hash = subprocess.check_output(
+            ['git', 'rev-parse', 'HEAD']
+            ).strip().decode()
+        log = pd.DataFrame(
+            index=[0],
+            data={ 
+                'time':pd.Timestamp.today(),
+                'catalog_name':save_path.name,
+                'burst_params':repr(self),
+                'git_revision_hash':git_revision_hash
+                })
+        # Determine if the header needs to be written
+        if log_path.exists():
+            header=False
+        else:
+            header=True
+        log.to_csv(log_path, 
+                mode='a', header=header, index=False)
         return
 
     def _time_gaps(self, width_s=None, max_time_gap=None):
@@ -194,6 +230,15 @@ class SignalToBackgroundLoop:
                 end_index = min(i+quarantine_dp, len(dropouts)-1)
                 dropouts[start_index:end_index] = 1
         return dropouts
+
+    def __repr__(self):
+        params = (
+                f'sc_id={self.sc_id}, '
+                f'microburst_width_s={self.microburst_width_s}, '
+                f'background_width_s={self.background_width_s}, '
+                f'std_thresh={self.std_thresh}'
+                )
+        return f'{self.__class__.__qualname__}(' + params + ')'
    
 
 if __name__ == '__main__':
