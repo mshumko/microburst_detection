@@ -2,12 +2,13 @@
 import pathlib
 from datetime import date
 
-
 import progressbar
 import pandas as pd
 import numpy as np
 import spacepy
 import matplotlib.pyplot as plt
+import matplotlib.ticker
+import matplotlib.dates
 
 from signal_to_background import config
 
@@ -16,11 +17,12 @@ sc_id = 4
 catalog_name = 'FU4_microburst_catalog_00.csv'
 catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
 
-save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots')
-save_dir.mkdir(parents=True, exist_ok=True)
+good_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 'good')
+bad_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 'bad')
+good_save_dir.mkdir(parents=True, exist_ok=True)
+bad_save_dir.mkdir(parents=True, exist_ok=True)
 
 cat = pd.read_csv(catalog_path, index_col=0, parse_dates=True)
-cat = cat[(cat['time_gap'] == 1) | (cat['saturated'] == 1)]
 
 def load_hr(date):
     """
@@ -38,14 +40,14 @@ def load_hr(date):
 
 current_date = date.min
 
+fig, ax = plt.subplots()
+
 for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]):
     if current_date != index.date():
         hr = load_hr(index)
         current_date = index.date()
     dt = pd.Timedelta(seconds=plot_window_s/2)
     time_range = (index-dt, index+dt)
-
-    _, ax = plt.subplots()
 
     idt = np.where(
         (hr['Time'] > time_range[0]) &
@@ -57,14 +59,21 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
 
     ax.set(
         xlim=time_range, xlabel='Time', 
-        ylabel=f'Counts/{float(hr.attrs["CADENCE"])}',
+        ylabel=f'Counts/{1000*float(hr.attrs["CADENCE"])} ms',
         title=index.strftime("%Y-%m-%d %H:%M:%S microburst validation")
         )
     ax.text(0.8, 1, f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}', 
         va='top', transform=ax.transAxes)
+    locator=matplotlib.ticker.MaxNLocator(nbins=5)
+    ax.xaxis.set_major_locator(locator)
+    fmt = matplotlib.dates.DateFormatter('%H:%M:%S')
+    ax.xaxis.set_major_formatter(fmt)
 
     plt.tight_layout()
     save_name = index.strftime("%Y%m%d_%H%M%S_microburst.png")
-    save_path = pathlib.Path(save_dir, save_name)
+    if (row["time_gap"] == 1) or (row["saturated"] == 1):
+        save_path = pathlib.Path(bad_save_dir, save_name)
+    else:
+        save_path = pathlib.Path(good_save_dir, save_name)
     plt.savefig(save_path)
-    del(ax)
+    ax.clear()
