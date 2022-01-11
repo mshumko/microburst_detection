@@ -14,11 +14,13 @@ from signal_to_background import config
 
 plot_window_s = 10
 sc_id = 4
-catalog_name = 'FU4_microburst_catalog_00.csv'
+catalog_name = 'FU4_microburst_catalog_01.csv'
 catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
 
-good_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 'good')
-bad_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 'bad')
+good_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
+    catalog_path.name.split('.')[0], 'good')
+bad_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
+    catalog_path.name.split('.')[0], 'bad')
 good_save_dir.mkdir(parents=True, exist_ok=True)
 bad_save_dir.mkdir(parents=True, exist_ok=True)
 
@@ -62,8 +64,13 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
         ylabel=f'Counts/{1000*float(hr.attrs["CADENCE"])} ms',
         title=index.strftime("%Y-%m-%d %H:%M:%S microburst validation")
         )
-    ax.text(0.8, 1, f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}', 
-        va='top', transform=ax.transAxes)
+    s = (
+        f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}\n\n'
+        f'L={round(row["McIlwainL"], 1)}\n'
+        f'MLT={round(row["MLT"], 1)}\n'
+        f'(lat,lon)=({round(row["Lat"], 1)}, {round(row["Lon"], 1)})'
+        )
+    ax.text(0.7, 1, s, va='top', transform=ax.transAxes)
     locator=matplotlib.ticker.MaxNLocator(nbins=5)
     ax.xaxis.set_major_locator(locator)
     fmt = matplotlib.dates.DateFormatter('%H:%M:%S')

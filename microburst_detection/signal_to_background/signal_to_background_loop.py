@@ -223,10 +223,13 @@ class SignalToBackgroundLoop:
         dc_dt = counts[1:] - counts[:-1]
         dropouts = np.zeros_like(counts, dtype=int)
 
-        for i, dc_dt_i in enumerate(dc_dt):
-            if np.abs(dc_dt_i) > derivative_thresh:
+        for i, (dc_dt_i, dc_dt_f) in enumerate(zip(dc_dt[:-1], dc_dt[1:])):
+            # Check for a large drop, immediately followed by a large increase 
+            # by greather than derivative_thresh counts (per bin). 
+            if (dc_dt_i < -derivative_thresh) and (dc_dt_f > derivative_thresh):
                 start_index = max(0, i-quarantine_dp)
                 end_index = min(i+quarantine_dp, len(dropouts)-1)
+                # Mark all data points within +/- quarantine_dp as a dropout.
                 dropouts[start_index:end_index] = 1
         return dropouts
 
