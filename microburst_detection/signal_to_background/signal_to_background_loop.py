@@ -179,21 +179,20 @@ class SignalToBackgroundLoop:
                 mode='a', header=header, index=False)
         return
 
-    def _time_gaps(self, width_s=None, max_time_gap=None):
+    def _time_gaps(self, width_s=5, max_time_gap=None):
         """
         For each microburst, check if the time stamps within 
         int(width_s/self.cadence) data points have a time 
         difference less than time_gap. 
 
         width_s: int
-            Used to calculate the time window around each microburst.
-            10 seconds if None.
+            Used to identify the time window (in data points) 
+            around each microburst to test for time gaps.
         max_time_gap: float
-            The maximum time difference between time stamps within the
-            window_s to keep the microburst. 10*self.cadence if None. 
+            The maximum allowable time difference between time 
+            stamps within the window_s okay keep the microburst. 
+            10*self.cadence if None. 
         """
-        if width_s is None:
-            width_s = 10
         width_dp = int(width_s/(self.cadence*2))
         if max_time_gap is None:
             max_time_gap = 5*self.cadence
