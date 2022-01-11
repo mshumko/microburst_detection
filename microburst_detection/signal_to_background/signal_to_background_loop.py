@@ -101,7 +101,7 @@ class SignalToBackgroundLoop:
             daily_microburst_list.loc[:, self.count_keys] = self.hr['Col_counts'][self.s.peak_idt, :]/self.cadence
             daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[self.s.peak_idt, :].to_numpy()
             daily_microburst_list.loc[:, 'time_gap'] = self._time_gaps()
-            daily_microburst_list.loc[:, 'dropout'] = dropout[self.s.peak_idt]
+            daily_microburst_list.loc[:, 'saturated'] = dropout[self.s.peak_idt]
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
 
