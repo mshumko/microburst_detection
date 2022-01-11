@@ -204,12 +204,12 @@ class SignalToBackgroundLoop:
             if (peak_idt-width_dp < 0) or (peak_idt+width_dp >= len(self.hr['Time'])):
                 continue
             filtered_times = self.hr['Time'][peak_idt-width_dp:peak_idt+width_dp]
-            dt = np.array([(tf-ti).total_seconds() for tf, ti in zip(filtered_times[1:], filtered_times[:-1])])[0]
+            dt = np.array([(tf-ti).total_seconds() for tf, ti in zip(filtered_times[1:], filtered_times[:-1])])
             if np.max(dt) < max_time_gap:
                 near_gap[i] = 0
         return near_gap
 
-    def _dropout(self, derivative_thresh=200, quarantine_dp=20):
+    def _dropout(self, derivative_thresh=300, quarantine_dp=20):
         """
         Identify dropouts in the FIREBIRD data using the derivative approach.
 
