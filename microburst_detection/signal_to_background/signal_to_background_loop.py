@@ -58,7 +58,7 @@ class SignalToBackgroundLoop:
         self.hr_paths = sorted(pathlib.Path(config.FB_DIR).rglob(search_str))
         return
 
-    def loop(self, test_plots=True):
+    def loop(self, test_plots=False):
         """
         Loop over all the HiRes data and run the signal_to_background
         microburst detector on every day. For the detected microbursts
@@ -186,7 +186,7 @@ class SignalToBackgroundLoop:
         counts = self.hr['Col_counts'][:, self.detect_channel]
         # Techincally there is a division here, but we can ignore it since were working in count space.
         dc_dt = counts[1:] - counts[:-1]
-        dropouts = np.zeros_like(counts)
+        dropouts = np.zeros_like(counts, dtype=int)
 
         for i, dc_dt_i in enumerate(dc_dt):
             if np.abs(dc_dt_i) > derivative_thresh:
