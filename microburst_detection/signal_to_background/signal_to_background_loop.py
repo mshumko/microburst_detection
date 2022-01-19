@@ -216,21 +216,15 @@ class SignalToBackgroundLoop:
             Used to identify the time window (in data points) 
             around each microburst to look for zeros.
         """
-        width_dp = int(width_s/(self.cadence*2))
+        # width_dp = int(width_s/(self.cadence*2))
         
         n_zeros = np.zeros_like(self.s.peak_idt)  # Default to all near a time gap.
         for i, peak_idt in enumerate(self.s.peak_idt):
-            if (peak_idt-width_dp < 0):
-                start_index = 0 
-            else: 
-                start_index = peak_idt-width_dp
-
-            if (peak_idt+width_dp >= len(self.hr['Time'])):
-                end_index = len(self.hr['Time'])
-            else:
-                end_index = peak_idt+width_dp
-                
-            n_zeros[i] = sum(self.hr['Col_counts'][start_index:end_index, 0]==0)
+            idt = np.where(
+                (self.hr['Time'] > self.hr['Time'][peak_idt]-pd.Timedelta(seconds=width_s/2)) & 
+                (self.hr['Time'] < self.hr['Time'][peak_idt]+pd.Timedelta(seconds=width_s/2))
+                )[0]                
+            n_zeros[i] = sum(self.hr['Col_counts'][idt, 0]==0)
         return n_zeros
 
 
