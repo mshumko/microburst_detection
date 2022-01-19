@@ -62,22 +62,23 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
     ax.set(
         xlim=time_range, xlabel='Time', 
         ylabel=f'Counts/{1000*float(hr.attrs["CADENCE"])} ms',
-        title=index.strftime("%Y-%m-%d %H:%M:%S microburst validation")
+        title=index.strftime("%Y-%m-%d %H:%M:%S.%f\nmicroburst validation")
         )
     s = (
-        f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}\n\n'
+        f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}\n'
+        f'n_zeros={sum(hr["Col_counts"][idt, 0] == 0)}\n\n'
         f'L={round(row["McIlwainL"], 1)}\n'
         f'MLT={round(row["MLT"], 1)}\n'
         f'(lat,lon)=({round(row["Lat"], 1)}, {round(row["Lon"], 1)})'
         )
-    ax.text(0.7, 1, s, va='top', transform=ax.transAxes)
+    ax.text(0.7, 1, s, va='top', transform=ax.transAxes, color='red')
     locator=matplotlib.ticker.MaxNLocator(nbins=5)
     ax.xaxis.set_major_locator(locator)
     fmt = matplotlib.dates.DateFormatter('%H:%M:%S')
     ax.xaxis.set_major_formatter(fmt)
 
     plt.tight_layout()
-    save_name = index.strftime("%Y%m%d_%H%M%S_microburst.png")
+    save_name = index.strftime("%Y%m%d_%H%M%S_%f_microburst.png")
     if (row["time_gap"] == 1) or (row["saturated"] == 1):
         save_path = pathlib.Path(bad_save_dir, save_name)
     else:
