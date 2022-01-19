@@ -11,7 +11,7 @@ import matplotlib.ticker
 import matplotlib.dates
 
 from signal_to_background import config
-from signal_to_background.misc.load_firebird import readJSONheadedASCII
+from microburst_detection.misc.load_firebird import readJSONheadedASCII
 
 plot_window_s = 10
 sc_id = 4
@@ -67,7 +67,7 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
         )
     s = (
         f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}\n'
-        f'n_zeros={row['n_zeros']}\n\n'
+        f'n_zeros={row["n_zeros"]}\n\n'
         f'L={round(row["McIlwainL"], 1)}\n'
         f'MLT={round(row["MLT"], 1)}\n'
         f'(lat,lon)=({round(row["Lat"], 1)}, {round(row["Lon"], 1)})'
