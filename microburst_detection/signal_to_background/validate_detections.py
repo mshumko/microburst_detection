@@ -5,7 +5,6 @@ from datetime import date
 import progressbar
 import pandas as pd
 import numpy as np
-# import spacepy
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import matplotlib.dates

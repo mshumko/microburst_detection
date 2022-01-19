@@ -1,11 +1,10 @@
-import numpy as np
-import pandas as pd
 import pathlib
 import subprocess
+
+import numpy as np
+import pandas as pd
 import progressbar
 import matplotlib.pyplot as plt
-
-# import spacepy
 
 from microburst_detection.signal_to_background import signal_to_background
 from microburst_detection.misc.load_firebird import readJSONheadedASCII
