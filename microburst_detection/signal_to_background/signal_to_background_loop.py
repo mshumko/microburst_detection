@@ -5,9 +5,10 @@ import subprocess
 import progressbar
 import matplotlib.pyplot as plt
 
-import spacepy
+# import spacepy
 
 from microburst_detection.signal_to_background import signal_to_background
+from microburst_detection.misc.load_firebird import readJSONheadedASCII
 from microburst_detection import config
 
 class SignalToBackgroundLoop:
@@ -50,7 +51,7 @@ class SignalToBackgroundLoop:
             self.count_keys = [f'counts_s_{i}' for i in range(6)]
             self.sig_keys = [f'sig_{i}' for i in range(6)]
             self.catalog_columns = (self.hr_keys + self.count_keys + 
-                self.sig_keys + ['time_gap', 'saturated'])
+                self.sig_keys + ['time_gap', 'saturated', 'n_zeros'])
         else:
             self.catalog_columns = catalog_columns
 
@@ -69,9 +70,8 @@ class SignalToBackgroundLoop:
         self.microburst_list = pd.DataFrame(columns=self.catalog_columns)
 
         for hr_path in progressbar.progressbar(self.hr_paths, redirect_stdout=True):
-            self.hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
-            self.hr['Time'] = pd.to_datetime(self.hr['Time'])
-            self.cadence = float(self.hr.attrs['CADENCE'])
+            self.hr = readJSONheadedASCII(hr_path)
+            self.cadence = self.hr.attrs['CADENCE']
                 
             # All of the code to detect microbursts is here.
             self.s = signal_to_background.FirebirdSignalToBackground(
@@ -102,6 +102,7 @@ class SignalToBackgroundLoop:
             daily_microburst_list.loc[:, self.sig_keys] = self.s.n_std.loc[self.s.peak_idt, :].to_numpy()
             daily_microburst_list.loc[:, 'time_gap'] = self._time_gaps()
             daily_microburst_list.loc[:, 'saturated'] = dropout[self.s.peak_idt]
+            daily_microburst_list.loc[:, 'n_zeros'] = self._number_of_nearby_zeros()
                                             
             self.microburst_list = pd.concat((self.microburst_list, daily_microburst_list))
 
@@ -207,6 +208,32 @@ class SignalToBackgroundLoop:
             if np.max(dt) < max_time_gap:
                 near_gap[i] = 0
         return near_gap
+
+    def _number_of_nearby_zeros(self, width_s=5):
+        """
+        Look for, and count how many zero counts were near each microburst.
+
+        width_s: int
+            Used to identify the time window (in data points) 
+            around each microburst to look for zeros.
+        """
+        width_dp = int(width_s/(self.cadence*2))
+        
+        n_zeros = np.zeros_like(self.s.peak_idt)  # Default to all near a time gap.
+        for i, peak_idt in enumerate(self.s.peak_idt):
+            if (peak_idt-width_dp < 0):
+                start_index = 0 
+            else: 
+                start_index = peak_idt-width_dp
+
+            if (peak_idt+width_dp >= len(self.hr['Time'])):
+                end_index = len(self.hr['Time'])
+            else:
+                end_index = peak_idt+width_dp
+                
+            n_zeros[i] = sum(self.hr['Col_counts'][start_index:end_index, 0]==0)
+        return n_zeros
+
 
     def _dropout(self, derivative_thresh=300, quarantine_dp=20):
         """

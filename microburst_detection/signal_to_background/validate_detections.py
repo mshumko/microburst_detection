@@ -5,16 +5,17 @@ from datetime import date
 import progressbar
 import pandas as pd
 import numpy as np
-import spacepy
+# import spacepy
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import matplotlib.dates
 
 from signal_to_background import config
+from signal_to_background.misc.load_firebird import readJSONheadedASCII
 
 plot_window_s = 10
 sc_id = 4
-catalog_name = 'FU4_microburst_catalog_01.csv'
+catalog_name = 'FU4_microburst_catalog_02.csv'
 catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
 
 good_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
@@ -36,8 +37,8 @@ def load_hr(date):
         f'{len(hr_paths)} HiRes paths found in {pathlib.Path(config.FB_DIR)} '
         f'that match {search_str}.'
         )
-    hr = spacepy.datamodel.readJSONheadedASCII(str(hr_paths[0]))
-    hr['Time'] = pd.to_datetime(hr['Time'])
+    hr = readJSONheadedASCII(hr_paths[0])
+    # hr['Time'] = pd.to_datetime(hr['Time'])
     return hr
 
 current_date = date.min
@@ -66,7 +67,7 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
         )
     s = (
         f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}\n'
-        f'n_zeros={sum(hr["Col_counts"][idt, 0] == 0)}\n\n'
+        f'n_zeros={row['n_zeros']}\n\n'
         f'L={round(row["McIlwainL"], 1)}\n'
         f'MLT={round(row["MLT"], 1)}\n'
         f'(lat,lon)=({round(row["Lat"], 1)}, {round(row["Lon"], 1)})'
