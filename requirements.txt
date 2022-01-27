@@ -3,7 +3,6 @@
 # the dependencies yourself or change the "==" to ">=".)
 numpy>=1.18.1
 pandas>=1.0.3
-spacepy>=0.2.1
 progressbar2>=3.47.0
 scipy>=1.4.1
 

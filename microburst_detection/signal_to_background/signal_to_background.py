@@ -1,12 +1,12 @@
 import pathlib
 from datetime import datetime
 
-import spacepy
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from microburst_detection import config
+from microburst_detection.misc.load_firebird import readJSONheadedASCII
 from microburst_detection.misc.locate_consecutive_numbers import locateConsecutiveNumbers
 
 class SignalToBackground:
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     assert len(hr_paths) == 1, (f'A unique HiRes path not found.\n'
                                 f'hr_paths={hr_paths} search_str={search_str}')
     hr_path = str(hr_paths[0])
-    hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
+    hr = readJSONheadedASCII(str(hr_path))
     hr['Time'] = pd.to_datetime(hr['Time'])
     cadence = float(hr.attrs['CADENCE'])
 

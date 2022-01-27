@@ -8,8 +8,7 @@ import dateutil.parser
 from matplotlib.widgets import Button, TextBox
 import pathlib
 
-import spacepy.datamodel
-
+from microburst_detection.misc.load_firebird import readJSONheadedASCII
 from microburst_detection import config
 
 class Browser:
@@ -69,22 +68,6 @@ class Browser:
             )
         self.catalog = pd.read_csv(catalog_path)
         self.catalog.Time = pd.to_datetime(self.catalog.Time)
-
-        # times = num2date(self.catalog.Time)
-        # self.catalog.Time = np.array([t.replace(tzinfo=None) for t in times])
-
-        # try: 
-        #     # If in date2num format
-        #     float(self.catalog.Time[0])
-        #     times = num2date(self.catalog.Time)
-        #     self.catalog.Time = np.array([t.replace(tzinfo=None) for t in times])
-        # except ValueError as err:
-        #     if "could not convert string to float" in str(err):
-        #         # If in string format (for Arlo)
-        #         self.catalog.Time = np.array([dateutil.parser.parse(t) 
-        #                                     for t in self.catalog.Time])
-        #     else:
-        #         raise
         return
 
     def filter_catalog(self, filterDict={}):
@@ -277,20 +260,12 @@ class Browser:
 
     def _load_hr(self, date):
         """ Loads FIREBIRD HiRes data and converts times """
-
-        # search_str = f'FU{sc_id}*Hires*{hr_date.year}*{hr_date.month}*{hr_date.day}*L2*'
-        # hr_paths = list(pathlib.Path(config.FB_DIR, ).rglob(search_str))
-        # assert len(hr_paths) == 1, (f'A unique HiRes path not found.\n'
-        #                             f'hr_paths={hr_paths} search_str={search_str}')
-        # hr_path = str(hr_paths[0])
-        # hr = spacepy.datamodel.readJSONheadedASCII(str(hr_path))
-
         search_str = f'FU{self.fb_id}_Hires_{date}_L2.txt'
         hr_paths = list(pathlib.Path(config.FB_DIR).rglob(search_str))
         assert len(hr_paths) == 1, (f'A unique HiRes path not found.\n'
                                     f'hr_paths={hr_paths} search_str={search_str}')
         hr_path = str(hr_paths[0])
-        self.hr = spacepy.datamodel.readJSONheadedASCII(hr_path)
+        self.hr = readJSONheadedASCII(hr_path)
         self.hr['Time'] = pd.to_datetime(self.hr['Time'])
         #self.hr['Time'] = np.array([dateutil.parser.parse(t) for t in self.hr['Time']])
         self.cadence = 1000*float(self.hr.attrs['CADENCE'])

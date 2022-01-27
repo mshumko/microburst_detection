@@ -5,13 +5,13 @@ import pathlib
 import string
 from datetime import datetime
 
-import spacepy.datamodel
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
 
 from microburst_detection.wavelets import wavelet_analysis
 from microburst_detection import config
+from microburst_detection.misc.load_firebird import readJSONheadedASCII
 
 plt.rcParams.update({'font.size': 13})
 
@@ -23,7 +23,7 @@ hr_paths = list(pathlib.Path(config.FB_DIR, ).rglob(search_str))
 assert len(hr_paths) == 1, (f'A unique HiRes path not found.\n'
                             f'hr_paths={hr_paths} search_str={search_str}')
 hr_path = str(hr_paths[0])
-hr = spacepy.datamodel.readJSONheadedASCII(hr_path)
+hr = readJSONheadedASCII(hr_path)
 
 # Convert time array
 hr['Time'] = pd.to_datetime(hr['Time'])

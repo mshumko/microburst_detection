@@ -11,7 +11,7 @@ different parameters The burst parameter was used in, for example,
 O'Brien et al., 2003; Douma et al., 2017; Shumko et al., 2020.
 
 # Dependencies:
-Easiest method to install the numpy, pandas, progressbar, and spacepy 
+Easiest method to install the numpy, pandas, and progressbar 
 dependencies is with pip and the requirements.txt file. 
 
 Install with: 
