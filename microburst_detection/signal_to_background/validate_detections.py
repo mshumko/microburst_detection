@@ -13,8 +13,8 @@ from signal_to_background import config
 from microburst_detection.misc.load_firebird import readJSONheadedASCII
 
 plot_window_s = 10
-sc_id = 4
-catalog_name = 'FU4_microburst_catalog_02.csv'
+catalog_name = 'FU3_microburst_catalog_00.csv'
+sc_id = int(catalog_name[2])
 catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
 
 good_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
@@ -56,9 +56,11 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
         (hr['Time'] < time_range[1])
         )[0]
     idt_peak = np.where(hr['Time'] == index)[0]
-    ax.plot(hr['Time'][idt], hr['Col_counts'][idt, 0], c='k')
-    ax.scatter(hr['Time'][idt_peak], hr['Col_counts'][idt_peak, 0], marker='*', s=200, c='r')
-
+    for ch, color in zip([0, 5], ['k', 'purple', 'b', 'g', 'c', 'r']):
+        ax.plot(hr['Time'][idt], hr['Col_counts'][idt, ch], c=color, 
+                label=hr.attrs['Col_counts']['ELEMENT_LABELS'][ch])
+    ax.axvline(hr['Time'][idt_peak],c='r')
+    plt.legend(loc=2)
     ax.set(
         xlim=time_range, xlabel='Time', 
         ylabel=f'Counts/{1000*float(hr.attrs["CADENCE"])} ms',

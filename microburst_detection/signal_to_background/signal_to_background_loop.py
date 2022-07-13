@@ -239,7 +239,7 @@ class SignalToBackgroundLoop:
             How many data points around the dropout to flag as affected by the dropout.
         """
         counts = self.hr['Col_counts'][:, self.detect_channel]
-        # Techincally there is a division here, but we can ignore it since were working in count space.
+        # Technically there is a division here, but we can ignore it since were working in count space.
         dc_dt = counts[1:] - counts[:-1]
         dropouts = np.zeros_like(counts, dtype=int)
 
@@ -258,7 +258,8 @@ class SignalToBackgroundLoop:
                 f'sc_id={self.sc_id}, '
                 f'microburst_width_s={self.microburst_width_s}, '
                 f'background_width_s={self.background_width_s}, '
-                f'std_thresh={self.std_thresh}'
+                f'std_thresh={self.std_thresh}, '
+                f'detect_channel={self.detect_channel}' 
                 )
         return f'{self.__class__.__qualname__}(' + params + ')'
    
@@ -268,7 +269,11 @@ if __name__ == '__main__':
     microburst_width_s = 0.1
     background_width_s = 0.5
     std_thresh = 10
+    channel=5
 
-    s = SignalToBackgroundLoop(sc_id, microburst_width_s, background_width_s, std_thresh)
+    s = SignalToBackgroundLoop(
+        sc_id, microburst_width_s, background_width_s, 
+        std_thresh, detect_channel=channel
+        )
     s.loop()
     s.save_microbursts()
