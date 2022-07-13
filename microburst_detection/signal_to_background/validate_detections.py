@@ -13,7 +13,7 @@ from signal_to_background import config
 from microburst_detection.misc.load_firebird import readJSONheadedASCII
 
 plot_window_s = 10
-catalog_name = 'FU3_microburst_catalog_00.csv'
+catalog_name = 'FU4_microburst_catalog_03.csv'
 sc_id = int(catalog_name[2])
 catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
 
@@ -59,7 +59,7 @@ for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]
     for ch, color in zip([0, 5], ['k', 'purple', 'b', 'g', 'c', 'r']):
         ax.plot(hr['Time'][idt], hr['Col_counts'][idt, ch], c=color, 
                 label=hr.attrs['Col_counts']['ELEMENT_LABELS'][ch])
-    ax.axvline(hr['Time'][idt_peak],c='r')
+    ax.axvline(hr['Time'][idt_peak],c='r',alpha=0.3)
     plt.legend(loc=2)
     ax.set(
         xlim=time_range, xlabel='Time', 
