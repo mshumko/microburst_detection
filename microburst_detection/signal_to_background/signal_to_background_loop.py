@@ -239,7 +239,7 @@ class SignalToBackgroundLoop:
             How many data points around the dropout to flag as affected by the dropout.
         """
         counts = self.hr['Col_counts'][:, self.channel]
-        # Techincally there is a division here, but we can ignore it since were working in count space.
+        # Technically there is a division here, but we can ignore it since were working in count space.
         dc_dt = counts[1:] - counts[:-1]
         dropouts = np.zeros_like(counts, dtype=int)
 
