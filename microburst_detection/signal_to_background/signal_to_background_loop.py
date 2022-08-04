@@ -12,7 +12,7 @@ from microburst_detection import config
 
 class SignalToBackgroundLoop:
     def __init__(self, sc_id, microburst_width_s, background_width_s, std_thresh, 
-        detect_channel=0, catalog_columns=None):
+        channel=0, catalog_columns=None):
         """
         This program uses signal_to_background detection code to
         loop over all of the FIREBIRD data and detect all 
@@ -29,7 +29,7 @@ class SignalToBackgroundLoop:
         std_thresh : float
             The baseline standard deviation threshold above the baseline
             that the data point must be to satisfy the microburst criteria
-        detect_channel : int
+        channel : int
             The FIREBIRD energy channel number to use for std_thresh 
             critera. This is channel 0 by default.
         catalog_columns : list
@@ -42,7 +42,7 @@ class SignalToBackgroundLoop:
         self.background_width_s = background_width_s
         self.microburst_width_s = microburst_width_s
         self.std_thresh = std_thresh
-        self.detect_channel = detect_channel
+        self.channel = channel
 
         if catalog_columns is None:
             self.hr_keys = ['Time', 'Lat', 'Lon', 'Alt', 
@@ -81,7 +81,7 @@ class SignalToBackgroundLoop:
             self.s.significance()
             try:
                 self.s.find_microburst_peaks(std_thresh=self.std_thresh, 
-                                        detect_channel=self.detect_channel)
+                                        detect_channel=self.channel)
             except ValueError as err:
                 if str(err) == 'No detections found':
                     continue
@@ -107,15 +107,15 @@ class SignalToBackgroundLoop:
 
             if test_plots:
                 fig, ax = plt.subplots(2, sharex=True)
-                ax[0].plot(self.hr['Time'], self.hr['Col_counts'][:, self.detect_channel], c='k')
+                ax[0].plot(self.hr['Time'], self.hr['Col_counts'][:, self.channel], c='k')
                 ax[0].scatter(
                     self.hr['Time'][self.s.peak_idt], 
-                    self.hr['Col_counts'][self.s.peak_idt, self.detect_channel],
+                    self.hr['Col_counts'][self.s.peak_idt, self.channel],
                     marker='X', s=100, c='r', alpha=dropout[self.s.peak_idt]
                     )
                 ax[0].scatter(
                     self.hr['Time'][self.s.peak_idt], 
-                    self.hr['Col_counts'][self.s.peak_idt, self.detect_channel],
+                    self.hr['Col_counts'][self.s.peak_idt, self.channel],
                     marker='*', s=200, c='r', alpha=1-dropout[self.s.peak_idt]
                     )
                 ax[1].plot(self.hr['Time'], dropout)
@@ -238,7 +238,7 @@ class SignalToBackgroundLoop:
         quarantine_dp: int
             How many data points around the dropout to flag as affected by the dropout.
         """
-        counts = self.hr['Col_counts'][:, self.detect_channel]
+        counts = self.hr['Col_counts'][:, self.channel]
         # Techincally there is a division here, but we can ignore it since were working in count space.
         dc_dt = counts[1:] - counts[:-1]
         dropouts = np.zeros_like(counts, dtype=int)
@@ -258,17 +258,19 @@ class SignalToBackgroundLoop:
                 f'sc_id={self.sc_id}, '
                 f'microburst_width_s={self.microburst_width_s}, '
                 f'background_width_s={self.background_width_s}, '
-                f'std_thresh={self.std_thresh}'
+                f'std_thresh={self.std_thresh},'
+                f'channel={self.channel}'
                 )
         return f'{self.__class__.__qualname__}(' + params + ')'
    
 
 if __name__ == '__main__':
-    sc_id = 4
     microburst_width_s = 0.1
     background_width_s = 0.5
     std_thresh = 10
+    channel = 4
 
-    s = SignalToBackgroundLoop(sc_id, microburst_width_s, background_width_s, std_thresh)
-    s.loop()
-    s.save_microbursts()
+    for sc_id in [3, 4]:
+        s = SignalToBackgroundLoop(sc_id, microburst_width_s, background_width_s, std_thresh, channel=channel)
+        s.loop()
+        s.save_microbursts()
