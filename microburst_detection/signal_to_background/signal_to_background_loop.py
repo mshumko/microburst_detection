@@ -268,9 +268,9 @@ if __name__ == '__main__':
     microburst_width_s = 0.1
     background_width_s = 0.5
     std_thresh = 10
-    channel = 4
 
     for sc_id in [3, 4]:
-        s = SignalToBackgroundLoop(sc_id, microburst_width_s, background_width_s, std_thresh, channel=channel)
-        s.loop()
-        s.save_microbursts()
+        for channel in range(6):
+            s = SignalToBackgroundLoop(sc_id, microburst_width_s, background_width_s, std_thresh, channel=channel)
+            s.loop()
+            s.save_microbursts()

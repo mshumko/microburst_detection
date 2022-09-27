@@ -13,19 +13,7 @@ from signal_to_background import config
 from microburst_detection.misc.load_firebird import readJSONheadedASCII
 
 
-plot_window_s = 10
-# catalog_name = 'FU4_microburst_catalog_03.csv'
-# sc_id = int(catalog_name[2])
-# catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
-
-# good_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
-#     catalog_path.name.split('.')[0], 'good')
-# bad_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
-#     catalog_path.name.split('.')[0], 'bad')
-# good_save_dir.mkdir(parents=True, exist_ok=True)
-# bad_save_dir.mkdir(parents=True, exist_ok=True)
-
-# cat = pd.read_csv(catalog_path, index_col=0, parse_dates=True)
+plot_window_s = 2
 
 def load_hr(date):
     """
@@ -41,48 +29,19 @@ def load_hr(date):
     return hr
 
 for sc_id in [3,4]:
-    for cat_id in [4]:
+    for cat_id in [1]:
         catalog_name = f'FU{sc_id}_microburst_catalog_{cat_id:02d}.csv'
         catalog_path = pathlib.Path(config.PROJECT_DIR, 'data', catalog_name)
 
-        good_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
-            catalog_path.name.split('.')[0], 'good')
-        bad_save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
-            catalog_path.name.split('.')[0], 'bad')
-        good_save_dir.mkdir(parents=True, exist_ok=True)
-        bad_save_dir.mkdir(parents=True, exist_ok=True)
+        save_dir = pathlib.Path(catalog_path.parents[0], 'validation_plots', 
+            catalog_path.name.split('.')[0])
+        save_dir.mkdir(parents=True, exist_ok=True)
 
         cat = pd.read_csv(catalog_path, index_col=0, parse_dates=True)
 
         _, ax = plt.subplots()
 
-        # idt = np.where(
-        #     (hr['Time'] > time_range[0]) &
-        #     (hr['Time'] < time_range[1])
-        #     )[0]
-        # idt_peak = np.where(hr['Time'] == index)[0]
-        # for ch, color in zip([0, 5], ['k', 'purple', 'b', 'g', 'c', 'r']):
-        #     ax.plot(hr['Time'][idt], hr['Col_counts'][idt, ch], c=color, 
-        #             label=hr.attrs['Col_counts']['ELEMENT_LABELS'][ch])
-        # ax.axvline(hr['Time'][idt_peak],c='r',alpha=0.3)
-        # plt.legend(loc=2)
-        # ax.set(
-        #     xlim=time_range, xlabel='Time', 
-        #     ylabel=f'Counts/{1000*float(hr.attrs["CADENCE"])} ms',
-        #     title=index.strftime("%Y-%m-%d %H:%M:%S.%f\nmicroburst validation")
-        #     )
-        # s = (
-        #     f'time_gap={row["time_gap"]}\nsaturated={row["saturated"]}\n'
-        #     f'n_zeros={row["n_zeros"]}\n\n'
-        #     f'L={round(row["McIlwainL"], 1)}\n'
-        #     f'MLT={round(row["MLT"], 1)}\n'
-        #     f'(lat,lon)=({round(row["Lat"], 1)}, {round(row["Lon"], 1)})'
-        #     )
-        # ax.text(0.7, 1, s, va='top', transform=ax.transAxes, color='red')
-        # locator=matplotlib.ticker.MaxNLocator(nbins=5)
-        # ax.xaxis.set_major_locator(locator)
-        # fmt = matplotlib.dates.DateFormatter('%H:%M:%S')
-        # ax.xaxis.set_major_formatter(fmt)
+        
         current_date = datetime.min
         for index, row in progressbar.progressbar(cat.iterrows(), max_value=cat.shape[0]):
             if current_date != index.date():
@@ -118,10 +77,13 @@ for sc_id in [3,4]:
             ax.xaxis.set_major_formatter(fmt)
 
             plt.tight_layout()
-            save_name = index.strftime("%Y%m%d_%H%M%S_%f_microburst.png")
-            if (row["time_gap"] == 1) or (row["saturated"] == 1):
-                save_path = pathlib.Path(bad_save_dir, save_name)
-            else:
-                save_path = pathlib.Path(good_save_dir, save_name)
+
+            # 20150202_123907_056000_saturated=0_timegap=0_nzeros=0_L=XX_MLT=XX_lat=XX_lon=XX_microburst.png
+            save_time = index.strftime("%Y%m%d_%H%M%S_%f")
+            save_name = (f'{save_time}_saturated={int(row["saturated"])}_time_gap={int(row["time_gap"])}'
+                f'L={round(row["McIlwainL"], 1)}_MLT={round(row["MLT"], 1)}_'
+                f'lat=({round(row["Lat"], 1)}_lon={round(row["Lon"], 1)}'
+                f'_microbursts.png')
+            save_path = pathlib.Path(save_dir, save_name)
             plt.savefig(save_path)
             ax.clear()
