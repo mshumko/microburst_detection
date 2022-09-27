@@ -80,10 +80,10 @@ for sc_id in [3,4]:
 
             # 20150202_123907_056000_saturated=0_timegap=0_nzeros=0_L=XX_MLT=XX_lat=XX_lon=XX_microburst.png
             save_time = index.strftime("%Y%m%d_%H%M%S_%f")
-            save_name = (f'{save_time}_saturated={int(row["saturated"])}_time_gap={int(row["time_gap"])}'
-                f'L={round(row["McIlwainL"], 1)}_MLT={round(row["MLT"], 1)}_'
-                f'lat=({round(row["Lat"], 1)}_lon={round(row["Lon"], 1)}'
-                f'_microbursts.png')
+            save_name = (f'{save_time}_saturated={int(row["saturated"])}_timegap={int(row["time_gap"])}_'
+                f'nzeros={int(row["n_zeros"])}_L={round(row["McIlwainL"], 1)}_MLT={round(row["MLT"], 1)}_'
+                f'lat={round(row["Lat"], 1)}_lon={round(row["Lon"], 1)}_'
+                f'microbursts.png')
             save_path = pathlib.Path(save_dir, save_name)
             plt.savefig(save_path)
             ax.clear()
